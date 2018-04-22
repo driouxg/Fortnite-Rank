@@ -59,6 +59,38 @@ public class MainActivity extends AppCompatActivity {
     Intent intent = new Intent(this, PlayerHomeActivity.class);
     String playerName = ((EditText) findViewById(R.id.searchName)).getText().toString();
 
+    try {
+      fortniteApiServiceProvider
+          .setDataDownloadListener(new FortniteApiServiceProvider.DataDownloadListener() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public void PlayerFoundHandler(PlayerStatistics playerStatistics) {
+              // Go to player page
+              PlayerFound(view, intent, playerName);
+            }
+
+            @Override
+            public void PlayerNotFoundHandler() {
+              // Display error to user
+              System.out.println("SOMETHING WENT WRONG !!!!!!!!!!!!");
+            }
+          });
+      fortniteApiServiceProvider.execute(playerPlatform, playerName);
+
+
+    } catch (Exception e) {
+      System.out.println("------------------- EXCEPTION INITIAL: " + e.toString());
+    }
+  }
+
+  /**
+   * Redirects the user to the specified player page.
+   *
+   * @param view The view
+   * @param intent The intent that will perform the redirection
+   * @param playerName The name of the player
+   */
+  protected void PlayerFound(View view, Intent intent, String playerName) {
     // Create bundle for data passing.
     Bundle bundle = new Bundle();
 
@@ -71,29 +103,7 @@ public class MainActivity extends AppCompatActivity {
     // Put the bundle in the intent.
     intent.putExtras(bundle);
 
-    try {
-      fortniteApiServiceProvider
-          .setDataDownloadListener(new FortniteApiServiceProvider.DataDownloadListener() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public void PlayerFoundHandler(PlayerStatistics playerStatistics) {
-              // handler result
-              System.out.println("A PLAYER WAS FOUND !!!!!!!!!!!!!!!!");
-            }
-
-            @Override
-            public void PlayerNotFoundHandler() {
-              // handler failure (e.g network not available etc.)
-              System.out.println("SOMETHING WENT WRONG !!!!!!!!!!!!");
-            }
-          });
-      fortniteApiServiceProvider.execute(playerPlatform, playerName);
-
-
-    } catch (Exception e) {
-      System.out.println("------------------- EXCEPTION INITIAL: " + e.toString());
-    }
-
-    //startActivity(intent);
+    // Redirect to PlayerHome page
+    startActivity(intent);
   }
 }
