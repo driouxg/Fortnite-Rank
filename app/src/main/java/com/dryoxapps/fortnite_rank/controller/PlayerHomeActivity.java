@@ -2,7 +2,6 @@ package com.dryoxapps.fortnite_rank.controller;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-
 import com.dryoxapps.fortnite_rank.R;
 
 /**
@@ -19,6 +18,8 @@ public class PlayerHomeActivity extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
 
-        if ()
+        //Extract the data…
+        String playerName = bundle.getString("playerName");
+        String playerPlatform = bundle.getString("playerPlatform");
     }
 }

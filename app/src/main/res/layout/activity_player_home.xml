@@ -6,4 +6,11 @@
     android:layout_height="match_parent"
     tools:context="com.dryoxapps.fortnite_rank.controller.PlayerHomeActivity">
 
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="207dp"
+        android:layout_height="85dp"
+        android:text="TextView"
+        tools:layout_editor_absoluteX="38dp"
+        tools:layout_editor_absoluteY="88dp" />
 </android.support.constraint.ConstraintLayout>
