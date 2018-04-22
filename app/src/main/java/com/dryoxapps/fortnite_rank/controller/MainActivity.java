@@ -12,6 +12,7 @@ import com.dryoxapps.fortnite_rank.service.fortnite.FortniteApiServiceProvider;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStatistics;
 
 import co.ceryle.segmentedbutton.SegmentedButtonGroup;
+import com.google.gson.Gson;
 
 /**
  * This class implements the Main Activity.
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
   private FortniteApiServiceProvider fortniteApiServiceProvider = new FortniteApiServiceProvider();
 
   private String playerPlatform;
+  private static String ERROR_MESSAGE = "Player not found";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -37,13 +39,10 @@ public class MainActivity extends AppCompatActivity {
           @Override
           public void onClickedButtonPosition(int position) {
             if (position == 0) {
-              Toast.makeText(MainActivity.this, "PC", Toast.LENGTH_SHORT).show();
               playerPlatform = PlayerPlatform.PC.toString();
             } else if (position == 1) {
-              Toast.makeText(MainActivity.this, "XBOX", Toast.LENGTH_SHORT).show();
               playerPlatform = PlayerPlatform.XBOX.toString();
             } else if (position == 2) {
-              Toast.makeText(MainActivity.this, "PSN", Toast.LENGTH_SHORT).show();
               playerPlatform = PlayerPlatform.PSN.toString();
             }
           }
@@ -66,12 +65,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void PlayerFoundHandler(PlayerStatistics playerStatistics) {
               // Go to player page
-              PlayerFound(view, intent, playerName);
+              PlayerFound(view, intent, playerStatistics);
             }
 
             @Override
             public void PlayerNotFoundHandler() {
               // Display error to user
+              Toast.makeText(MainActivity.this, ERROR_MESSAGE, Toast.LENGTH_SHORT).show();
               System.out.println("SOMETHING WENT WRONG !!!!!!!!!!!!");
             }
           });
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     } catch (Exception e) {
-      System.out.println("------------------- EXCEPTION INITIAL: " + e.toString());
+      System.out.println("EXCEPTION IN SEARCH PAGE: " + e.toString());
     }
   }
 
@@ -88,17 +88,13 @@ public class MainActivity extends AppCompatActivity {
    *
    * @param view The view
    * @param intent The intent that will perform the redirection
-   * @param playerName The name of the player
+   * @param playerStatistics The POJO containing player statistics.
    */
-  protected void PlayerFound(View view, Intent intent, String playerName) {
+  protected void PlayerFound(View view, Intent intent, PlayerStatistics playerStatistics) {
     // Create bundle for data passing.
     Bundle bundle = new Bundle();
 
-    // Put player's name in bundle.
-    bundle.putString("playerName", playerName);
-
-    // Put player's platform in bundle.
-    bundle.putString("playerPlatform", playerPlatform);
+    intent.putExtra("myObject", new Gson().toJson(playerStatistics));
 
     // Put the bundle in the intent.
     intent.putExtras(bundle);

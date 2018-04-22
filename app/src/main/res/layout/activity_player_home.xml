@@ -1,16 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.dryoxapps.fortnite_rank.controller.PlayerHomeActivity">
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@color/Background_Color"
+  tools:context="com.dryoxapps.fortnite_rank.controller.PlayerHomeActivity">
+
+    <co.ceryle.segmentedbutton.SegmentedButtonGroup
+      android:id="@+id/segmentedButtonGroup"
+      android:layout_width="match_parent"
+      android:layout_height="48dp"
+      android:layout_margin="10dp"
+      android:layout_marginBottom="8dp"
+      android:layout_marginStart="8dp"
+      android:layout_marginEnd="8dp"
+      app:layout_constraintBottom_toTopOf="@+id/playerName"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="1.0"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:sbg_animateSelector="bounce"
+      app:sbg_animateSelectorDuration="500"
+      app:sbg_backgroundColor="#bf9ed4"
+      app:sbg_dividerColor="#ad7fc6"
+      app:sbg_dividerPadding="10dp"
+      app:sbg_dividerSize="1dp"
+      app:sbg_position="0"
+      app:sbg_radius="2dp"
+      app:sbg_ripple="true"
+      app:sbg_rippleColor="#ad7fc6"
+      app:sbg_selectorColor="#ad7fc6"
+      app:sbg_selectorTextColor="@android:color/white"
+      app:sbg_shadow="true"
+      app:sbg_shadowElevation="3dp"
+      app:sbg_shadowMargin="4dp">
+
+        <Button
+          android:id="@+id/txtOverall"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:minHeight="10dp"
+          android:text="Overall"
+          android:textAllCaps="true"/>
+
+        <Button
+          android:id="@+id/txtSOLO"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:minHeight="10dp"
+          android:text="SOLO"
+          android:textAllCaps="true"/>
+
+        <Button
+          android:id="@+id/txtDUO"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:minHeight="10dp"
+          android:text="DUO"
+          android:textAllCaps="true"/>
+
+        <Button
+          android:id="@+id/txtSQUAD"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:minHeight="10dp"
+          android:text="SQUAD"
+          android:textAllCaps="true"/>
+    </co.ceryle.segmentedbutton.SegmentedButtonGroup>
 
     <TextView
-        android:id="@+id/textView4"
-        android:layout_width="207dp"
-        android:layout_height="85dp"
-        android:text="TextView"
-        tools:layout_editor_absoluteX="38dp"
-        tools:layout_editor_absoluteY="88dp" />
+      android:id="@+id/playerName"
+      android:layout_width="207dp"
+      android:layout_height="85dp"
+      android:text="TextView"
+      android:textColor="@color/Logo_Color"
+      android:textSize="30sp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/segmentedButtonGroup"
+      tools:layout_editor_absoluteX="25dp"/>
 </android.support.constraint.ConstraintLayout>
