@@ -8,6 +8,8 @@ import android.widget.TextView;
 import co.ceryle.segmentedbutton.SegmentedButtonGroup;
 import com.dryoxapps.fortnite_rank.R;
 import com.dryoxapps.fortnite_rank.controller.domain.RankPercentile;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.CurrP10;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.CurrP2;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.CurrP9;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStatistics;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.Stats;
@@ -21,7 +23,6 @@ import com.google.gson.Gson;
 public class PlayerHomeActivity extends AppCompatActivity {
 
   private static String BUNDLE_OBJECT_NAME = "myObject";
-  private static String RANK_ICONS_PATH = "drawable/rank_icons/";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -44,9 +45,9 @@ public class PlayerHomeActivity extends AppCompatActivity {
             if (position == 0) {
               DisplayOverallStats(playerStatistics);
             } else if (position == 1) {
-              DisplaySoloStats(playerStatistics);
+              DisplaySoloStats(playerStatistics.getStats().getCurrP2());
             } else if (position == 2) {
-              DisplayDuoStats(playerStatistics);
+              DisplayDuoStats(playerStatistics.getStats().getCurrP10());
             } else if (position == 3) {
               DisplaySquadStats(playerStatistics.getStats().getCurrP9());
             }
@@ -83,19 +84,21 @@ public class PlayerHomeActivity extends AppCompatActivity {
   /**
    * Displays statistics for the solo tab.
    *
-   * @param playerStatistics The PlayerStatistics POJO.
+   * @param soloStats The solo-gamemode POJO.
    */
-  public void DisplaySoloStats(PlayerStatistics playerStatistics) {
-
+  public void DisplaySoloStats(CurrP2 soloStats) {
+    SetProfileRankIcon((ImageView) findViewById(R.id.profileRank),
+        RankPercentile.fromDouble(soloStats.getTrnRating().getPercentile()));
   }
 
   /**
    * Displays statistics for the duo tab.
    *
-   * @param playerStatistics The PlayerStatistics POJO.
+   * @param duoStats The duo-gamemode POJO.
    */
-  public void DisplayDuoStats(PlayerStatistics playerStatistics) {
-
+  public void DisplayDuoStats(CurrP10 duoStats) {
+    SetProfileRankIcon((ImageView) findViewById(R.id.profileRank),
+        RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
   }
 
   /**

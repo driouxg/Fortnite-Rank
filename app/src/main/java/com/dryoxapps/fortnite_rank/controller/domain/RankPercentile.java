@@ -83,6 +83,7 @@ public enum RankPercentile {
 
   /**
    * Convert from a double to a {@link RankPercentile} object.
+   * Will return the first enumeration that has a double value >= percentile.
    *
    * @param percentile The percentile as a double.
    * @return The found {@link RankPercentile} object, or {@code null} if the name doesn't match.
