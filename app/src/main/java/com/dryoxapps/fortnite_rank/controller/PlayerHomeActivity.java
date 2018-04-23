@@ -1,6 +1,5 @@
 package com.dryoxapps.fortnite_rank.controller;
 
-import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -12,7 +11,6 @@ import com.dryoxapps.fortnite_rank.service.fortnite.api.model.CurrP10;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.CurrP2;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.CurrP9;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStatistics;
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.Stats;
 import com.google.gson.Gson;
 
 /**
@@ -23,6 +21,7 @@ import com.google.gson.Gson;
 public class PlayerHomeActivity extends AppCompatActivity {
 
   private static String BUNDLE_OBJECT_NAME = "myObject";
+  private static double NON_EXISTENT = 500;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +32,8 @@ public class PlayerHomeActivity extends AppCompatActivity {
     PlayerStatistics playerStatistics = SerializeBundle(getIntent().getExtras());
 
     // Set player name
-    DisplayPlayerName(playerStatistics);
+    //DisplayPlayerName(playerStatistics);
+    SetTextView(findViewById(R.id.playerName), playerStatistics.getEpicUserHandle());
 
     // Create the Segmented Button Group, and change the value based on selection.
     SegmentedButtonGroup segmentedButtonGroup = (SegmentedButtonGroup) findViewById(
@@ -79,6 +79,8 @@ public class PlayerHomeActivity extends AppCompatActivity {
   public void DisplayOverallStats(PlayerStatistics playerStatistics) {
 
     // Need to compute overall sums of percentiles for curr9 curr10 and curr2
+    SetRankIcon(findViewById(R.id.profileRank),
+        RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
   }
 
   /**
@@ -87,8 +89,17 @@ public class PlayerHomeActivity extends AppCompatActivity {
    * @param soloStats The solo-gamemode POJO.
    */
   public void DisplaySoloStats(CurrP2 soloStats) {
-    SetProfileRankIcon((ImageView) findViewById(R.id.profileRank),
-        RankPercentile.fromDouble(soloStats.getTrnRating().getPercentile()));
+    try {
+      SetRankIcon(findViewById(R.id.profileRank),
+          RankPercentile.fromDouble(soloStats.getTrnRating().getPercentile()));
+
+      SetKdTableRow(soloStats.getKd().getValue(), soloStats.getKd().getPercentile());
+      SetKillsTableRow(soloStats.getKills().getValue(), NON_EXISTENT);
+      SetWinsTableRow(soloStats.getTop1().getValue(), soloStats.getTop1().getPercentile());
+      SetKpgTableRow(soloStats.getKpg().getValue(), soloStats.getKpg().getPercentile());
+    } catch (Exception e) {
+      System.out.println("Error Displaying Solo Stats: " + e.getMessage().toString());
+    }
   }
 
   /**
@@ -97,8 +108,13 @@ public class PlayerHomeActivity extends AppCompatActivity {
    * @param duoStats The duo-gamemode POJO.
    */
   public void DisplayDuoStats(CurrP10 duoStats) {
-    SetProfileRankIcon((ImageView) findViewById(R.id.profileRank),
+    SetRankIcon(findViewById(R.id.profileRank),
         RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
+
+    SetKdTableRow(duoStats.getKd().getValue(), duoStats.getKd().getPercentile());
+    SetKillsTableRow(duoStats.getKills().getValue(), NON_EXISTENT);
+    SetWinsTableRow(duoStats.getTop1().getValue(), duoStats.getTop1().getPercentile());
+    SetKpgTableRow(duoStats.getKpg().getValue(), duoStats.getKpg().getPercentile());
   }
 
   /**
@@ -107,36 +123,92 @@ public class PlayerHomeActivity extends AppCompatActivity {
    * @param squadStats The squad-gamemode POJO.
    */
   public void DisplaySquadStats(CurrP9 squadStats) {
-    SetProfileRankIcon((ImageView) findViewById(R.id.profileRank),
+    SetRankIcon(findViewById(R.id.profileRank),
         RankPercentile.fromDouble(squadStats.getTrnRating().getPercentile()));
+
+    SetKdTableRow(squadStats.getKd().getValue(), squadStats.getKd().getPercentile());
+    SetKillsTableRow(squadStats.getKills().getValue(), NON_EXISTENT);
+    SetWinsTableRow(squadStats.getTop1().getValue(), squadStats.getTop1().getPercentile());
+    SetKpgTableRow(squadStats.getKpg().getValue(), squadStats.getKpg().getPercentile());
   }
 
   /**
-   * Displays the Player's Name in a textview
+   * Utility method that sets the value for a text view.
    *
-   * @param playerStatistics The PlayerStatistics POJO
+   * @param textView The textview
+   * @param text The string of text
    */
-  public void DisplayPlayerName(PlayerStatistics playerStatistics) {
-    final TextView textViewToChange = (TextView) findViewById(R.id.playerName);
-    textViewToChange.setText(playerStatistics.getEpicUserHandle());
+  protected void SetTextView(TextView textView, String text) {
+    textView.setText(text);
+  }
+
+  /**
+   * Utility method that sets the values and image KD.
+   *
+   * @param val The kill-death value
+   * @param percentile The double value percentile
+   */
+  protected void SetKdTableRow(String val, double percentile) {
+    SetRankIcon(findViewById(R.id.statKdImage),
+        RankPercentile.fromDouble(percentile));
+
+    SetTextView(findViewById(R.id.statKdVal), val);
+  }
+
+  /**
+   * Utility method that sets the values and image Kills.
+   *
+   * @param val The kill-death value
+   * @param percentile The double value percentile
+   */
+  protected void SetKillsTableRow(String val, double percentile) {
+    SetRankIcon(findViewById(R.id.statKillsImage),
+        RankPercentile.fromDouble(percentile));
+
+    SetTextView(findViewById(R.id.statKillsVal), val);
+  }
+
+  /**
+   * Utility method that sets the values and image Wins.
+   *
+   * @param val The kill-death value
+   * @param percentile The double value percentile
+   */
+  protected void SetWinsTableRow(String val, double percentile) {
+    SetRankIcon(findViewById(R.id.statWinsImage),
+        RankPercentile.fromDouble(percentile));
+
+    SetTextView(findViewById(R.id.statWinsVal), val);
+  }
+
+  /**
+   * Utility method that sets the values and image Kpg.
+   *
+   * @param val The kill-death value
+   * @param percentile The double value percentile
+   */
+  protected void SetKpgTableRow(String val, double percentile) {
+    SetRankIcon(findViewById(R.id.statKpgImage),
+        RankPercentile.fromDouble(percentile));
+
+    SetTextView(findViewById(R.id.statKpgVal), val);
   }
 
   /**
    * Utility method that calculates the percentile average for squad stats.
    *
-   * @param squadStats The statistics in squad gamemode
-   * @return The average percentile for squad matches.
+   * @param playerStatistics The statistics for a player.
+   * @return The average percentile.
    */
-  protected double CalculatePercentileAverage(CurrP9 squadStats) {
+  protected double CalculateAverageRank(PlayerStatistics playerStatistics) {
     double sum = 0;
-    double items = 4;
+    double numItems = 3;
 
-    sum += squadStats.getKd().getPercentile();
-    sum += squadStats.getKills().getPercentile();
-    sum += squadStats.getKpg().getPercentile();
-    sum += squadStats.getTop1().getPercentile();
+    sum += playerStatistics.getStats().getCurrP2().getTrnRating().getPercentile();
+    sum += playerStatistics.getStats().getCurrP9().getTrnRating().getPercentile();
+    sum += playerStatistics.getStats().getCurrP10().getTrnRating().getPercentile();
 
-    return sum / items;
+    return sum / numItems;
   }
 
   /**
@@ -145,9 +217,9 @@ public class PlayerHomeActivity extends AppCompatActivity {
    * @param image The profile rank image
    * @param rankPercentile The double percentile value.
    */
-  protected void SetProfileRankIcon(ImageView image, RankPercentile rankPercentile) {
+  protected void SetRankIcon(ImageView image, RankPercentile rankPercentile) {
     if (rankPercentile != null) {
-      switch(rankPercentile) {
+      switch (rankPercentile) {
         case CHAMPION:
           image.setImageResource(R.drawable.champion);
           break;

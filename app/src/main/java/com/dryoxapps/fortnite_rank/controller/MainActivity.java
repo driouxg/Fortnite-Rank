@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
   private FortniteApiServiceProvider fortniteApiServiceProvider = new FortniteApiServiceProvider();
 
-  private String playerPlatform;
+  private String playerPlatform = PlayerPlatform.PC.toString();
   private static String ERROR_MESSAGE = "Player not found";
 
   @Override
