@@ -32,7 +32,6 @@ public class PlayerHomeActivity extends AppCompatActivity {
     PlayerStatistics playerStatistics = SerializeBundle(getIntent().getExtras());
 
     // Set player name
-    //DisplayPlayerName(playerStatistics);
     SetTextView(findViewById(R.id.playerName), playerStatistics.getEpicUserHandle());
 
     // Create the Segmented Button Group, and change the value based on selection.

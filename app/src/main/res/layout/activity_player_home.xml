@@ -71,17 +71,16 @@
     <TextView
       android:id="@+id/playerName"
       android:layout_width="207dp"
-      android:layout_height="85dp"
-      android:layout_marginStart="8dp"
+      android:layout_height="79dp"
       android:gravity="center_vertical"
       android:text="TextView"
       android:textColor="@color/Logo_Color"
       android:textSize="30sp"
-      app:layout_constraintBottom_toTopOf="@+id/scrollView2"
-      app:layout_constraintEnd_toStartOf="@+id/profileRank"
+      app:layout_constraintBottom_toBottomOf="@+id/profileRank"
+      app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintHorizontal_bias="0.5"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/segmentedButtonGroup"/>
+      app:layout_constraintStart_toEndOf="@+id/profileRank"
+      app:layout_constraintTop_toTopOf="@+id/profileRank"/>
     <ImageView
       android:id="@+id/profileRank"
       android:layout_width="73dp"
@@ -89,12 +88,12 @@
       android:layout_marginTop="8dp"
       android:layout_marginBottom="8dp"
       app:layout_constraintBottom_toTopOf="@+id/scrollView2"
-      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintEnd_toStartOf="@+id/playerName"
       app:layout_constraintHorizontal_bias="0.5"
-      app:layout_constraintStart_toEndOf="@+id/playerName"
+      app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@+id/segmentedButtonGroup"
-      app:layout_constraintVertical_bias="1.0"
-      app:srcCompat="@android:color/transparent"/>
+      app:srcCompat="@android:color/transparent"
+      />
 
 
     <ScrollView
@@ -126,91 +125,94 @@
 
                 <TableRow
                   android:layout_width="match_parent"
-                  android:layout_gravity="fill_horizontal"
-                  android:minHeight="50px">
+                  android:background="#bf9ed4"
+                  android:minHeight="50dp">
                     <ImageView
-                      android:id="@+id/statKdImage"
+                      android:id="@+id/statKillsImage"
                       android:layout_width="50dp"
-                      android:layout_height="50px"
-                      android:gravity="center_vertical"
+                      android:layout_height="50dp"
+                      android:layout_gravity="center_horizontal"
                       app:srcCompat="@android:color/transparent"/>
-                    <TextView
-                      android:id="@+id/statKdName"
-                      android:layout_width="84dp"
-                      android:layout_height="50px"
-                      android:gravity="center_vertical"
-                      android:text="Kd"/>
-                    <TextView
-                      android:id="@+id/statKdVal"
-                      android:layout_width="42dp"
-                      android:layout_height="50px"
-                      android:gravity="center_vertical"
-                      android:text="TextView"/>
-                </TableRow>
-                <TableRow
-                  android:layout_width="match_parent"
-                  android:minHeight="50px">
                     <TextView
                       android:id="@+id/statKillsName"
                       android:layout_width="match_parent"
-                      android:layout_height="50px"
+                      android:layout_height="50dp"
                       android:gravity="center_vertical"
                       android:text="Kills"/>
                     <TextView
                       android:id="@+id/statKillsVal"
                       android:layout_width="match_parent"
-                      android:layout_height="50px"
-                      android:gravity="center_vertical"
-                      android:text="TextView"/>
-                    <ImageView
-                      android:id="@+id/statKillsImage"
-                      android:layout_width="10dp"
                       android:layout_height="50dp"
                       android:gravity="center_vertical"
-                      app:srcCompat="@android:color/transparent"/>
+                      android:text="TextView"/>
                 </TableRow>
                 <TableRow
                   android:layout_width="match_parent"
-                  android:minHeight="50px">
+                  android:background="#dccae8"
+                  android:minHeight="50dp">
+                    <ImageView
+                      android:id="@+id/statKdImage"
+                      android:layout_width="50dp"
+                      android:layout_height="50dp"
+                      app:srcCompat="@android:color/transparent"/>
+                    <TextView
+                      android:id="@+id/statKdName"
+                      android:layout_width="84dp"
+                      android:layout_height="50dp"
+                      android:gravity="center_vertical"
+                      android:text="Kd"/>
+                    <TextView
+                      android:id="@+id/statKdVal"
+                      android:layout_width="42dp"
+                      android:layout_height="50dp"
+                      android:gravity="center_vertical"
+                      android:text="TextView"/>
+                </TableRow>
+                <TableRow
+                  android:layout_width="match_parent"
+                  android:background="#bf9ed4"
+                  android:minHeight="50dp">
+                    <ImageView
+                      android:id="@+id/statWinsImage"
+                      android:layout_width="50dp"
+                      android:layout_height="50dp"
+                      android:layout_gravity="center_horizontal"
+                      android:gravity="center_vertical"
+                      app:srcCompat="@android:color/transparent"/>
                     <TextView
                       android:id="@+id/statWinsName"
                       android:layout_width="wrap_content"
-                      android:layout_height="50px"
+                      android:layout_height="50dp"
                       android:gravity="center_vertical"
                       android:text="Wins"/>
                     <TextView
                       android:id="@+id/statWinsVal"
                       android:layout_width="wrap_content"
-                      android:layout_height="50px"
+                      android:layout_height="50dp"
                       android:gravity="center_vertical"
                       android:text="TextView"/>
-                    <ImageView
-                      android:id="@+id/statWinsImage"
-                      android:layout_width="wrap_content"
-                      android:layout_height="50px"
-                      android:gravity="center_vertical"
-                      app:srcCompat="@android:color/transparent"/>
                 </TableRow>
                 <TableRow
                   android:layout_width="match_parent"
-                  android:minHeight="50px">
+                  android:background="#dccae8"
+                  android:minHeight="50dp">
+                    <ImageView
+                      android:id="@+id/statKpgImage"
+                      android:layout_width="50dp"
+                      android:layout_height="50dp"
+                      app:srcCompat="@android:color/transparent"/>
                     <TextView
                       android:id="@+id/statKpgName"
                       android:layout_width="wrap_content"
-                      android:layout_height="50px"
+                      android:layout_height="50dp"
                       android:gravity="center_vertical"
                       android:text="Kpg"/>
                     <TextView
                       android:id="@+id/statKpgVal"
                       android:layout_width="wrap_content"
-                      android:layout_height="50px"
+                      android:layout_height="50dp"
                       android:gravity="center_vertical"
                       android:text="TextView"/>
-                    <ImageView
-                      android:id="@+id/statKpgImage"
-                      android:layout_width="wrap_content"
-                      android:layout_height="50px"
-                      app:srcCompat="@android:color/transparent"/>
                 </TableRow>
             </TableLayout>
         </LinearLayout>
