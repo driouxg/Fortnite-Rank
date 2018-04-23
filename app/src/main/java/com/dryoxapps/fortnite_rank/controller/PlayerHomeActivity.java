@@ -1,5 +1,7 @@
 package com.dryoxapps.fortnite_rank.controller;
 
+import static java.lang.Math.round;
+
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -22,6 +24,7 @@ public class PlayerHomeActivity extends AppCompatActivity {
 
   private static String BUNDLE_OBJECT_NAME = "myObject";
   private static double NON_EXISTENT = 500;
+  private static double NUM_OF_GAME_MODES = 3;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -77,9 +80,16 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   public void DisplayOverallStats(PlayerStatistics playerStatistics) {
 
-    // Need to compute overall sums of percentiles for curr9 curr10 and curr2
     SetRankIcon(findViewById(R.id.profileRank),
         RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
+
+    SetKillsTableRow(CalculateTotalKills(playerStatistics), NON_EXISTENT);
+    SetKdTableRow(CalculateAverageKdVal(playerStatistics),
+        CalculateAverageKdPercentile(playerStatistics));
+    SetWinsTableRow(CalculateAverageWinsVal(playerStatistics),
+        CalculateAverageWinsPercentile(playerStatistics));
+    SetKpgTableRow(CalculateAverageKpgVal(playerStatistics),
+        CalculateAverageKpgPercentile(playerStatistics));
   }
 
   /**
@@ -201,13 +211,124 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   protected double CalculateAverageRank(PlayerStatistics playerStatistics) {
     double sum = 0;
-    double numItems = 3;
 
     sum += playerStatistics.getStats().getCurrP2().getTrnRating().getPercentile();
     sum += playerStatistics.getStats().getCurrP9().getTrnRating().getPercentile();
     sum += playerStatistics.getStats().getCurrP10().getTrnRating().getPercentile();
 
-    return sum / numItems;
+    return sum / NUM_OF_GAME_MODES;
+  }
+
+  /**
+   * Utility method that calculates the total sum of kills;
+   *
+   * @param playerStatistics The statistics for a player
+   * @return The total kills
+   */
+  protected String CalculateTotalKills(PlayerStatistics playerStatistics) {
+    int sum = 0;
+
+    sum += playerStatistics.getStats().getCurrP2().getKills().getValueInt();
+    sum += playerStatistics.getStats().getCurrP9().getKills().getValueInt();
+    sum += playerStatistics.getStats().getCurrP10().getKills().getValueInt();
+
+    return Integer.toString(sum);
+  }
+
+  /**
+   * Utility method that calculates the average percentile rank for Kd
+   *
+   * @param playerStatistics The statistics for a player
+   * @return The average percentile for Kd
+   */
+  protected double CalculateAverageKdPercentile(PlayerStatistics playerStatistics) {
+    double sum = 0;
+
+    sum += playerStatistics.getStats().getCurrP2().getKd().getPercentile();
+    sum += playerStatistics.getStats().getCurrP9().getKd().getPercentile();
+    sum += playerStatistics.getStats().getCurrP10().getKd().getPercentile();
+
+    return sum / NUM_OF_GAME_MODES;
+  }
+
+  /**
+   * Utility method that calculates the average value for Kd.
+   *
+   * @param playerStatistics The statistics for a player
+   * @return The average value for Kd.
+   */
+  protected String CalculateAverageKdVal(PlayerStatistics playerStatistics) {
+    double sum = 0;
+
+    sum += playerStatistics.getStats().getCurrP2().getKd().getValueDec();
+    sum += playerStatistics.getStats().getCurrP9().getKd().getValueDec();
+    sum += playerStatistics.getStats().getCurrP10().getKd().getValueDec();
+
+    return String.format("%.2f", sum / NUM_OF_GAME_MODES);
+  }
+
+  /**
+   * Utility method that calculates the average value for wins.
+   *
+   * @param playerStatistics The statistics for a player
+   * @return The average value for wins
+   */
+  protected String CalculateAverageWinsVal(PlayerStatistics playerStatistics) {
+    int sum = 0;
+
+    sum += playerStatistics.getStats().getCurrP2().getTop1().getValueInt();
+    sum += playerStatistics.getStats().getCurrP9().getTop1().getValueInt();
+    sum += playerStatistics.getStats().getCurrP10().getTop1().getValueInt();
+
+    return String.format("%.2f", sum / NUM_OF_GAME_MODES);
+  }
+
+  /**
+   * Utility method that calculates the average percentile for for Wins
+   *
+   * @param playerStatistics The statistics for a player
+   * @return The average percentile for wins
+   */
+  protected double CalculateAverageWinsPercentile(PlayerStatistics playerStatistics) {
+    double sum = 0;
+
+    sum += playerStatistics.getStats().getCurrP2().getTop1().getPercentile();
+    sum += playerStatistics.getStats().getCurrP9().getTop1().getPercentile();
+    sum += playerStatistics.getStats().getCurrP10().getTop1().getPercentile();
+
+    return sum / NUM_OF_GAME_MODES;
+  }
+
+  /**
+   * Utility method that calculates the average value for wins.
+   *
+   * @param playerStatistics The statistics for a player
+   * @return The average value for Kpg
+   */
+  protected String CalculateAverageKpgVal(PlayerStatistics playerStatistics) {
+    double sum = 0;
+
+    sum += playerStatistics.getStats().getCurrP2().getKpg().getValueDec();
+    sum += playerStatistics.getStats().getCurrP9().getKpg().getValueDec();
+    sum += playerStatistics.getStats().getCurrP10().getKpg().getValueDec();
+
+    return String.format("%.2f", sum / NUM_OF_GAME_MODES);
+  }
+
+  /**
+   * Utility method that calculates the average percentile for for Kpg.
+   *
+   * @param playerStatistics The statistics for a player
+   * @return The average percentile for Kpg
+   */
+  protected double CalculateAverageKpgPercentile(PlayerStatistics playerStatistics) {
+    double sum = 0;
+
+    sum += playerStatistics.getStats().getCurrP2().getKpg().getPercentile();
+    sum += playerStatistics.getStats().getCurrP9().getKpg().getPercentile();
+    sum += playerStatistics.getStats().getCurrP10().getKpg().getPercentile();
+
+    return sum / NUM_OF_GAME_MODES;
   }
 
   /**
