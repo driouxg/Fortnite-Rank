@@ -1,13 +1,12 @@
 package com.dryoxapps.fortnite_rank.controller;
 
-import static java.lang.Math.round;
-
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 import co.ceryle.segmentedbutton.SegmentedButtonGroup;
 import com.dryoxapps.fortnite_rank.R;
+import com.dryoxapps.fortnite_rank.controller.domain.RankName;
 import com.dryoxapps.fortnite_rank.controller.domain.RankPercentile;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.CurrP10;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.CurrP2;
@@ -36,6 +35,9 @@ public class PlayerHomeActivity extends AppCompatActivity {
 
     // Set player name
     SetTextView(findViewById(R.id.playerName), playerStatistics.getEpicUserHandle());
+
+    // Display default statistics (Overall)
+    DisplayOverallStats(playerStatistics);
 
     // Create the Segmented Button Group, and change the value based on selection.
     SegmentedButtonGroup segmentedButtonGroup = (SegmentedButtonGroup) findViewById(
@@ -82,7 +84,8 @@ public class PlayerHomeActivity extends AppCompatActivity {
 
     SetRankIcon(findViewById(R.id.profileRank),
         RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
-
+    SetRankName(findViewById(R.id.profileRankName),
+        RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
     SetKillsTableRow(CalculateTotalKills(playerStatistics), NON_EXISTENT);
     SetKdTableRow(CalculateAverageKdVal(playerStatistics),
         CalculateAverageKdPercentile(playerStatistics));
@@ -101,7 +104,8 @@ public class PlayerHomeActivity extends AppCompatActivity {
     try {
       SetRankIcon(findViewById(R.id.profileRank),
           RankPercentile.fromDouble(soloStats.getTrnRating().getPercentile()));
-
+      SetRankName(findViewById(R.id.profileRankName),
+          RankPercentile.fromDouble(soloStats.getTrnRating().getPercentile()));
       SetKdTableRow(soloStats.getKd().getValue(), soloStats.getKd().getPercentile());
       SetKillsTableRow(soloStats.getKills().getValue(), NON_EXISTENT);
       SetWinsTableRow(soloStats.getTop1().getValue(), soloStats.getTop1().getPercentile());
@@ -119,7 +123,8 @@ public class PlayerHomeActivity extends AppCompatActivity {
   public void DisplayDuoStats(CurrP10 duoStats) {
     SetRankIcon(findViewById(R.id.profileRank),
         RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
-
+    SetRankName(findViewById(R.id.profileRankName),
+        RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
     SetKdTableRow(duoStats.getKd().getValue(), duoStats.getKd().getPercentile());
     SetKillsTableRow(duoStats.getKills().getValue(), NON_EXISTENT);
     SetWinsTableRow(duoStats.getTop1().getValue(), duoStats.getTop1().getPercentile());
@@ -134,7 +139,8 @@ public class PlayerHomeActivity extends AppCompatActivity {
   public void DisplaySquadStats(CurrP9 squadStats) {
     SetRankIcon(findViewById(R.id.profileRank),
         RankPercentile.fromDouble(squadStats.getTrnRating().getPercentile()));
-
+    SetRankName(findViewById(R.id.profileRankName),
+        RankPercentile.fromDouble(squadStats.getTrnRating().getPercentile()));
     SetKdTableRow(squadStats.getKd().getValue(), squadStats.getKd().getPercentile());
     SetKillsTableRow(squadStats.getKills().getValue(), NON_EXISTENT);
     SetWinsTableRow(squadStats.getTop1().getValue(), squadStats.getTop1().getPercentile());
@@ -420,6 +426,100 @@ public class PlayerHomeActivity extends AppCompatActivity {
           break;
         case BRONZE5:
           image.setImageResource(R.drawable.bronze5);
+          break;
+      }
+    }
+  }
+
+  /**
+   * Sets the Profile rank image, based on the TRN-rating percentile.
+   *
+   * @param textView The profile rank
+   * @param rankPercentile The double percentile value.
+   */
+  protected void SetRankName(TextView textView, RankPercentile rankPercentile) {
+    if (rankPercentile != null) {
+      switch (rankPercentile) {
+        case CHAMPION:
+          textView.setText(RankName.CHAMPION.toString());
+          break;
+        case SOUL:
+          textView.setText(RankName.SOUL.toString());
+          break;
+        case DIAMOND1:
+          textView.setText(RankName.DIAMOND1.toString());
+          break;
+        case DIAMOND2:
+          textView.setText(RankName.DIAMOND2.toString());
+          break;
+        case DIAMOND3:
+          textView.setText(RankName.DIAMOND3.toString());
+          break;
+        case DIAMOND4:
+          textView.setText(RankName.DIAMOND4.toString());
+          break;
+        case DIAMOND5:
+          textView.setText(RankName.DIAMOND5.toString());
+          break;
+        case PLATINUM1:
+          textView.setText(RankName.PLATINUM1.toString());
+          break;
+        case PLATINUM2:
+          textView.setText(RankName.PLATINUM2.toString());
+          break;
+        case PLATINUM3:
+          textView.setText(RankName.PLATINUM3.toString());
+          break;
+        case PLATINUM4:
+          textView.setText(RankName.PLATINUM4.toString());
+          break;
+        case PLATINUM5:
+          textView.setText(RankName.PLATINUM5.toString());
+          break;
+        case GOLD1:
+          textView.setText(RankName.GOLD1.toString());
+          break;
+        case GOLD2:
+          textView.setText(RankName.GOLD2.toString());
+          break;
+        case GOLD3:
+          textView.setText(RankName.GOLD3.toString());
+          break;
+        case GOLD4:
+          textView.setText(RankName.GOLD4.toString());
+          break;
+        case GOLD5:
+          textView.setText(RankName.GOLD5.toString());
+          break;
+        case SILVER1:
+          textView.setText(RankName.SILVER1.toString());
+          break;
+        case SILVER2:
+          textView.setText(RankName.SILVER2.toString());
+          break;
+        case SILVER3:
+          textView.setText(RankName.SILVER3.toString());
+          break;
+        case SILVER4:
+          textView.setText(RankName.SILVER4.toString());
+          break;
+        case SILVER5:
+          textView.setText(RankName.SILVER5.toString());
+          break;
+        case BRONZE1:
+          textView.setText(RankName.BRONZE1.toString());
+          break;
+        case BRONZE2:
+          textView.setText(RankName.BRONZE2.toString());
+          break;
+        case BRONZE3:
+          textView.setText(RankName.BRONZE3.toString());
+          break;
+        case BRONZE4:
+          textView.setText(RankName.BRONZE4.toString());
+          break;
+        case BRONZE5:
+          textView.setText(RankName.BRONZE5.toString());
           break;
       }
     }
