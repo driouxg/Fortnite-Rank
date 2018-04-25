@@ -1,6 +1,7 @@
 package com.dryoxapps.fortnite_rank.service.fortnite;
 
 import android.os.AsyncTask;
+import java.util.Objects;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -21,6 +22,8 @@ public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerSt
   private static String API_KEY_KEY = "TRN-Api-Key";
   private static String API_KEY = "a4565ca8-67aa-4f3e-8f7b-734c9f2c49da";
   private static String SLASH_KEY = "/";
+  private static String PLAYER_NOT_FOUND = "Player Not Found";
+  private static String ERROR_KEY = "error";
   private static int PLAYER_PLATFORM_INDEX = 0;
   private static int PLAYER_NAME_INDEX = 1;
 
@@ -62,7 +65,11 @@ public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerSt
         .exchange(BuildUri(params[PLAYER_PLATFORM_INDEX], params[PLAYER_NAME_INDEX]),
             HttpMethod.GET, entity, PlayerStatistics.class);
 
-    return respEntity.getBody();
+    if (respEntity.getBody().getAdditionalProperties().get(ERROR_KEY) != null) {
+      return null;
+    } else {
+      return respEntity.getBody();
+    }
   }
 
   /**

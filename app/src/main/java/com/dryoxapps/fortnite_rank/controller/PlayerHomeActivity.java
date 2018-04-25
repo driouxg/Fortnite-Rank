@@ -46,14 +46,19 @@ public class PlayerHomeActivity extends AppCompatActivity {
         .setOnClickedButtonPosition(new SegmentedButtonGroup.OnClickedButtonPosition() {
           @Override
           public void onClickedButtonPosition(int position) {
-            if (position == 0) {
-              DisplayOverallStats(playerStatistics);
-            } else if (position == 1) {
-              DisplaySoloStats(playerStatistics.getStats().getCurrP2());
-            } else if (position == 2) {
-              DisplayDuoStats(playerStatistics.getStats().getCurrP10());
-            } else if (position == 3) {
-              DisplaySquadStats(playerStatistics.getStats().getCurrP9());
+            switch (position) {
+              case 0:
+                DisplayOverallStats(playerStatistics);
+                break;
+              case 1:
+                DisplaySoloStats(playerStatistics.getStats().getCurrP2());
+                break;
+              case 2:
+                DisplayDuoStats(playerStatistics.getStats().getCurrP10());
+                break;
+              case 3:
+                DisplaySquadStats(playerStatistics.getStats().getCurrP9());
+                break;
             }
           }
         });

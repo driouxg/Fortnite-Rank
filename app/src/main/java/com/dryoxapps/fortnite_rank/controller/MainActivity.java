@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void PlayerFoundHandler(PlayerStatistics playerStatistics) {
               // Go to player page
+
+              System.out.println("Player Found -----------------");
               PlayerFound(view, intent, playerStatistics);
             }
 
