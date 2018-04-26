@@ -21,10 +21,12 @@ import com.google.gson.Gson;
  */
 public class MainActivity extends AppCompatActivity {
 
-  private FortniteApiServiceProvider fortniteApiServiceProvider = new FortniteApiServiceProvider();
+  private FortniteApiServiceProvider fortniteApiServiceProvider;
 
+  private boolean searchingForPlayer = false;
   private String playerPlatform = PlayerPlatform.PC.toString();
   private static String ERROR_MESSAGE = "Player not found";
+  private static String CURRENT_INTENT = "com.dryoxapps.fortnite_rank.controller";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -55,33 +57,38 @@ public class MainActivity extends AppCompatActivity {
    * @param view The corresponding view object for this activity class.
    */
   public void SearchForPlayer(View view) {
-    Intent intent = new Intent(this, PlayerHomeActivity.class);
     String playerName = ((EditText) findViewById(R.id.searchName)).getText().toString();
 
-    try {
-      fortniteApiServiceProvider
-          .setDataDownloadListener(new FortniteApiServiceProvider.DataDownloadListener() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public void PlayerFoundHandler(PlayerStatistics playerStatistics) {
-              // Go to player page
+    if (!searchingForPlayer) {
+      searchingForPlayer = true;
+      fortniteApiServiceProvider = new FortniteApiServiceProvider();
 
-              System.out.println("Player Found -----------------");
-              PlayerFound(view, intent, playerStatistics);
-            }
+      try {
+        fortniteApiServiceProvider
+            .setDataDownloadListener(new FortniteApiServiceProvider.DataDownloadListener() {
+              @SuppressWarnings("unchecked")
+              @Override
+              public void PlayerFoundHandler(PlayerStatistics playerStatistics) {
+                // Go to player page
+                Intent intent = new Intent(getApplicationContext(), PlayerHomeActivity.class);
+                System.out.println("Player Found -----------------");
+                PlayerFound(view, intent, playerStatistics);
+                searchingForPlayer = false;
+              }
 
-            @Override
-            public void PlayerNotFoundHandler() {
-              // Display error to user
-              Toast.makeText(MainActivity.this, ERROR_MESSAGE, Toast.LENGTH_SHORT).show();
-              System.out.println("SOMETHING WENT WRONG !!!!!!!!!!!!");
-            }
-          });
-      fortniteApiServiceProvider.execute(playerPlatform, playerName);
+              @Override
+              public void PlayerNotFoundHandler() {
+                // Display error to user
+                Toast.makeText(MainActivity.this, ERROR_MESSAGE, Toast.LENGTH_SHORT).show();
+                System.out.println("SOMETHING WENT WRONG !!!!!!!!!!!!");
+                searchingForPlayer = false;
+              }
+            });
+        fortniteApiServiceProvider.execute(playerPlatform, playerName);
 
-
-    } catch (Exception e) {
-      System.out.println("EXCEPTION IN SEARCH PAGE: " + e.toString());
+      } catch (Exception e) {
+        System.out.println("EXCEPTION IN SEARCH PAGE: " + e.toString());
+      }
     }
   }
 

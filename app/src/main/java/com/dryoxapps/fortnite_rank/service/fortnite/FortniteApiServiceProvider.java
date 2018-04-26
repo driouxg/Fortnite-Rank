@@ -65,6 +65,7 @@ public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerSt
         .exchange(BuildUri(params[PLAYER_PLATFORM_INDEX], params[PLAYER_NAME_INDEX]),
             HttpMethod.GET, entity, PlayerStatistics.class);
 
+    // Check for No Player Found
     if (respEntity.getBody().getAdditionalProperties().get(ERROR_KEY) != null) {
       return null;
     } else {
