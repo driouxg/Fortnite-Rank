@@ -13,6 +13,8 @@ import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStatistics;
 
 import co.ceryle.segmentedbutton.SegmentedButtonGroup;
 import com.google.gson.Gson;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * This class implements the Main Activity.
@@ -22,11 +24,13 @@ import com.google.gson.Gson;
 public class MainActivity extends AppCompatActivity {
 
   private FortniteApiServiceProvider fortniteApiServiceProvider;
+  Timer timer = new Timer();
 
   private boolean searchingForPlayer = false;
+  private boolean timerRunning = false;
   private String playerPlatform = PlayerPlatform.PC.toString();
   private static String ERROR_MESSAGE = "Player not found";
-  private static String CURRENT_INTENT = "com.dryoxapps.fortnite_rank.controller";
+  private static String BUNDLE_OBJECT_NAME = "myObject";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
   public void SearchForPlayer(View view) {
     String playerName = ((EditText) findViewById(R.id.searchName)).getText().toString();
 
-    if (!searchingForPlayer) {
+    if (!searchingForPlayer && !timerRunning) {
       searchingForPlayer = true;
       fortniteApiServiceProvider = new FortniteApiServiceProvider();
 
@@ -90,6 +94,9 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("EXCEPTION IN SEARCH PAGE: " + e.toString());
       }
     }
+    else {
+      Toast.makeText(MainActivity.this, "You must wait", Toast.LENGTH_SHORT).show();
+    }
   }
 
   /**
@@ -103,12 +110,21 @@ public class MainActivity extends AppCompatActivity {
     // Create bundle for data passing.
     Bundle bundle = new Bundle();
 
-    intent.putExtra("myObject", new Gson().toJson(playerStatistics));
+    intent.putExtra(BUNDLE_OBJECT_NAME, new Gson().toJson(playerStatistics));
 
     // Put the bundle in the intent.
     intent.putExtras(bundle);
 
     // Redirect to PlayerHome page
     startActivity(intent);
+  }
+
+  protected void StartTimer() {
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        // Your database code here
+      }
+    }, 2 * 60 * 1000);
   }
 }
