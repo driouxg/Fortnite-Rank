@@ -24,13 +24,15 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity {
 
   private FortniteApiServiceProvider fortniteApiServiceProvider;
-  Timer timer = new Timer();
+  Timer timer;
 
   private boolean searchingForPlayer = false;
   private boolean timerRunning = false;
   private String playerPlatform = PlayerPlatform.PC.toString();
   private static String ERROR_MESSAGE = "Player not found";
+  private static String ERROR_MESSAGE_TIMER = "Too many requests, wait 30 seconds.";
   private static String BUNDLE_OBJECT_NAME = "myObject";
+  private static int THIRTY_SECONDS = 30000;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +67,9 @@ public class MainActivity extends AppCompatActivity {
 
     if (!searchingForPlayer && !timerRunning) {
       searchingForPlayer = true;
+      timerRunning = true;
       fortniteApiServiceProvider = new FortniteApiServiceProvider();
+      StartTimer();
 
       try {
         fortniteApiServiceProvider
@@ -93,9 +97,8 @@ public class MainActivity extends AppCompatActivity {
       } catch (Exception e) {
         System.out.println("EXCEPTION IN SEARCH PAGE: " + e.toString());
       }
-    }
-    else {
-      Toast.makeText(MainActivity.this, "You must wait", Toast.LENGTH_SHORT).show();
+    } else {
+      Toast.makeText(MainActivity.this, ERROR_MESSAGE_TIMER , Toast.LENGTH_SHORT).show();
     }
   }
 
@@ -120,11 +123,14 @@ public class MainActivity extends AppCompatActivity {
   }
 
   protected void StartTimer() {
+    timer = new Timer();
+
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        // Your database code here
+        timerRunning = false;
+        timer.cancel();
       }
-    }, 2 * 60 * 1000);
+    }, THIRTY_SECONDS);
   }
 }
