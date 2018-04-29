@@ -60,7 +60,8 @@ public enum RankPercentile {
 
   BRONZE4(91.73),
 
-  BRONZE5(95.48);
+  //BRONZE5(95.48);
+  BRONZE5(100);
 
   private double percentile;
 

@@ -42,6 +42,7 @@ public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerSt
    * Executes before doInBackground()
    */
   @Override
+
   protected void onPreExecute() {
     super.onPreExecute();
   }

@@ -8,11 +8,13 @@ import co.ceryle.segmentedbutton.SegmentedButtonGroup;
 import com.dryoxapps.fortnite_rank.R;
 import com.dryoxapps.fortnite_rank.controller.domain.RankName;
 import com.dryoxapps.fortnite_rank.controller.domain.RankPercentile;
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.CurrP10;
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.CurrP2;
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.CurrP9;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.DuoStatistics;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.SoloStatistics;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.SquadStatistics;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStatistics;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class implements the home player screen.
@@ -21,9 +23,11 @@ import com.google.gson.Gson;
  */
 public class PlayerHomeActivity extends AppCompatActivity {
 
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(PlayerHomeActivity.class);
+
   private static String BUNDLE_OBJECT_NAME = "myObject";
   private static double NON_EXISTENT = 500;
-  private static double NUM_OF_GAME_MODES = 3;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -51,13 +55,13 @@ public class PlayerHomeActivity extends AppCompatActivity {
                 DisplayOverallStats(playerStatistics);
                 break;
               case 1:
-                DisplaySoloStats(playerStatistics.getStats().getCurrP2());
+                DisplaySoloStats(playerStatistics.getStats().getSoloStatistics());
                 break;
               case 2:
-                DisplayDuoStats(playerStatistics.getStats().getCurrP10());
+                DisplayDuoStats(playerStatistics.getStats().getDuoStatistics());
                 break;
               case 3:
-                DisplaySquadStats(playerStatistics.getStats().getCurrP9());
+                DisplaySquadStats(playerStatistics.getStats().getSquadStatistics());
                 break;
             }
           }
@@ -87,17 +91,21 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   public void DisplayOverallStats(PlayerStatistics playerStatistics) {
 
-    SetRankIcon(findViewById(R.id.profileRank),
-        RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
-    SetRankName(findViewById(R.id.profileRankName),
-        RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
-    SetKillsTableRow(CalculateTotalKills(playerStatistics), NON_EXISTENT);
-    SetKdTableRow(CalculateAverageKdVal(playerStatistics),
-        CalculateAverageKdPercentile(playerStatistics));
-    SetWinsTableRow(CalculateAverageWinsVal(playerStatistics),
-        CalculateAverageWinsPercentile(playerStatistics));
-    SetKpgTableRow(CalculateAverageKpgVal(playerStatistics),
-        CalculateAverageKpgPercentile(playerStatistics));
+    try {
+      SetRankIcon(findViewById(R.id.profileRank),
+          RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
+      SetRankName(findViewById(R.id.profileRankName),
+          RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
+      SetKillsTableRow(CalculateTotalKills(playerStatistics), NON_EXISTENT);
+      SetKdTableRow(CalculateAverageKdVal(playerStatistics),
+          CalculateAverageKdPercentile(playerStatistics));
+      SetWinsTableRow(CalculateAverageWinsVal(playerStatistics),
+          CalculateAverageWinsPercentile(playerStatistics));
+      SetKpgTableRow(CalculateAverageKpgVal(playerStatistics),
+          CalculateAverageKpgPercentile(playerStatistics));
+    } catch (Exception e) {
+      LOGGER.error("Error displaying Overall Stats: " + e.getMessage().toString());
+    }
   }
 
   /**
@@ -105,7 +113,7 @@ public class PlayerHomeActivity extends AppCompatActivity {
    *
    * @param soloStats The solo-gamemode POJO.
    */
-  public void DisplaySoloStats(CurrP2 soloStats) {
+  public void DisplaySoloStats(SoloStatistics soloStats) {
     try {
       SetRankIcon(findViewById(R.id.profileRank),
           RankPercentile.fromDouble(soloStats.getTrnRating().getPercentile()));
@@ -116,7 +124,7 @@ public class PlayerHomeActivity extends AppCompatActivity {
       SetWinsTableRow(soloStats.getTop1().getValue(), soloStats.getTop1().getPercentile());
       SetKpgTableRow(soloStats.getKpg().getValue(), soloStats.getKpg().getPercentile());
     } catch (Exception e) {
-      System.out.println("Error Displaying Solo Stats: " + e.getMessage().toString());
+      LOGGER.error("Error Displaying Solo Stats: " + e.getMessage().toString());
     }
   }
 
@@ -125,15 +133,19 @@ public class PlayerHomeActivity extends AppCompatActivity {
    *
    * @param duoStats The duo-gamemode POJO.
    */
-  public void DisplayDuoStats(CurrP10 duoStats) {
-    SetRankIcon(findViewById(R.id.profileRank),
-        RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
-    SetRankName(findViewById(R.id.profileRankName),
-        RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
-    SetKdTableRow(duoStats.getKd().getValue(), duoStats.getKd().getPercentile());
-    SetKillsTableRow(duoStats.getKills().getValue(), NON_EXISTENT);
-    SetWinsTableRow(duoStats.getTop1().getValue(), duoStats.getTop1().getPercentile());
-    SetKpgTableRow(duoStats.getKpg().getValue(), duoStats.getKpg().getPercentile());
+  public void DisplayDuoStats(DuoStatistics duoStats) {
+    try {
+      SetRankIcon(findViewById(R.id.profileRank),
+          RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
+      SetRankName(findViewById(R.id.profileRankName),
+          RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
+      SetKdTableRow(duoStats.getKd().getValue(), duoStats.getKd().getPercentile());
+      SetKillsTableRow(duoStats.getKills().getValue(), NON_EXISTENT);
+      SetWinsTableRow(duoStats.getTop1().getValue(), duoStats.getTop1().getPercentile());
+      SetKpgTableRow(duoStats.getKpg().getValue(), duoStats.getKpg().getPercentile());
+    } catch (Exception e) {
+      LOGGER.error("Error displaying Duo Stats: " + e.getMessage().toString());
+    }
   }
 
   /**
@@ -141,15 +153,19 @@ public class PlayerHomeActivity extends AppCompatActivity {
    *
    * @param squadStats The squad-gamemode POJO.
    */
-  public void DisplaySquadStats(CurrP9 squadStats) {
-    SetRankIcon(findViewById(R.id.profileRank),
-        RankPercentile.fromDouble(squadStats.getTrnRating().getPercentile()));
-    SetRankName(findViewById(R.id.profileRankName),
-        RankPercentile.fromDouble(squadStats.getTrnRating().getPercentile()));
-    SetKdTableRow(squadStats.getKd().getValue(), squadStats.getKd().getPercentile());
-    SetKillsTableRow(squadStats.getKills().getValue(), NON_EXISTENT);
-    SetWinsTableRow(squadStats.getTop1().getValue(), squadStats.getTop1().getPercentile());
-    SetKpgTableRow(squadStats.getKpg().getValue(), squadStats.getKpg().getPercentile());
+  public void DisplaySquadStats(SquadStatistics squadStats) {
+    try {
+      SetRankIcon(findViewById(R.id.profileRank),
+          RankPercentile.fromDouble(squadStats.getTrnRating().getPercentile()));
+      SetRankName(findViewById(R.id.profileRankName),
+          RankPercentile.fromDouble(squadStats.getTrnRating().getPercentile()));
+      SetKdTableRow(squadStats.getKd().getValue(), squadStats.getKd().getPercentile());
+      SetKillsTableRow(squadStats.getKills().getValue(), NON_EXISTENT);
+      SetWinsTableRow(squadStats.getTop1().getValue(), squadStats.getTop1().getPercentile());
+      SetKpgTableRow(squadStats.getKpg().getValue(), squadStats.getKpg().getPercentile());
+    } catch (Exception e) {
+      LOGGER.error("Error displaying Squad Stats: " + e.getMessage().toString());
+    }
   }
 
   /**
@@ -222,12 +238,22 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   protected double CalculateAverageRank(PlayerStatistics playerStatistics) {
     double sum = 0;
+    double numberOfGameModes = 0;
 
-    sum += playerStatistics.getStats().getCurrP2().getTrnRating().getPercentile();
-    sum += playerStatistics.getStats().getCurrP9().getTrnRating().getPercentile();
-    sum += playerStatistics.getStats().getCurrP10().getTrnRating().getPercentile();
+    if (playerStatistics.getStats().getSoloStatistics().getTrnRating().getPercentile() != null) {
+      sum += playerStatistics.getStats().getSoloStatistics().getTrnRating().getPercentile();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getSquadStatistics().getTrnRating().getPercentile() != null) {
+      sum += playerStatistics.getStats().getSquadStatistics().getTrnRating().getPercentile();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getDuoStatistics().getTrnRating().getPercentile() != null) {
+      sum += playerStatistics.getStats().getDuoStatistics().getTrnRating().getPercentile();
+      numberOfGameModes++;
+    }
 
-    return sum / NUM_OF_GAME_MODES;
+    return sum / numberOfGameModes;
   }
 
   /**
@@ -239,9 +265,15 @@ public class PlayerHomeActivity extends AppCompatActivity {
   protected String CalculateTotalKills(PlayerStatistics playerStatistics) {
     int sum = 0;
 
-    sum += playerStatistics.getStats().getCurrP2().getKills().getValueInt();
-    sum += playerStatistics.getStats().getCurrP9().getKills().getValueInt();
-    sum += playerStatistics.getStats().getCurrP10().getKills().getValueInt();
+    if (playerStatistics.getStats().getSoloStatistics().getKills().getValueInt() != null) {
+      sum += playerStatistics.getStats().getSoloStatistics().getKills().getValueInt();
+    }
+    if (playerStatistics.getStats().getSquadStatistics().getKills().getValueInt() != null) {
+      sum += playerStatistics.getStats().getSquadStatistics().getKills().getValueInt();
+    }
+    if (playerStatistics.getStats().getDuoStatistics().getKills().getValueInt() != null) {
+      sum += playerStatistics.getStats().getDuoStatistics().getKills().getValueInt();
+    }
 
     return Integer.toString(sum);
   }
@@ -254,12 +286,22 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   protected double CalculateAverageKdPercentile(PlayerStatistics playerStatistics) {
     double sum = 0;
+    double numberOfGameModes = 0;
 
-    sum += playerStatistics.getStats().getCurrP2().getKd().getPercentile();
-    sum += playerStatistics.getStats().getCurrP9().getKd().getPercentile();
-    sum += playerStatistics.getStats().getCurrP10().getKd().getPercentile();
+    if (playerStatistics.getStats().getSoloStatistics().getKd().getPercentile() != null) {
+      sum += playerStatistics.getStats().getSoloStatistics().getKd().getPercentile();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getSquadStatistics().getKd().getPercentile() != null) {
+      sum += playerStatistics.getStats().getSquadStatistics().getKd().getPercentile();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getDuoStatistics().getKd().getPercentile() != null) {
+      sum += playerStatistics.getStats().getDuoStatistics().getKd().getPercentile();
+      numberOfGameModes++;
+    }
 
-    return sum / NUM_OF_GAME_MODES;
+    return sum / numberOfGameModes;
   }
 
   /**
@@ -270,12 +312,22 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   protected String CalculateAverageKdVal(PlayerStatistics playerStatistics) {
     double sum = 0;
+    double numberOfGameModes = 0;
 
-    sum += playerStatistics.getStats().getCurrP2().getKd().getValueDec();
-    sum += playerStatistics.getStats().getCurrP9().getKd().getValueDec();
-    sum += playerStatistics.getStats().getCurrP10().getKd().getValueDec();
+    if (playerStatistics.getStats().getSoloStatistics().getKd().getValueDec() != null) {
+      sum += playerStatistics.getStats().getSoloStatistics().getKd().getValueDec();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getSquadStatistics().getKd().getValueDec() != null) {
+      sum += playerStatistics.getStats().getSquadStatistics().getKd().getValueDec();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getDuoStatistics().getKd().getValueDec() != null) {
+      sum += playerStatistics.getStats().getDuoStatistics().getKd().getValueDec();
+      numberOfGameModes++;
+    }
 
-    return String.format("%.2f", sum / NUM_OF_GAME_MODES);
+    return String.format("%.2f", sum / numberOfGameModes);
   }
 
   /**
@@ -286,12 +338,22 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   protected String CalculateAverageWinsVal(PlayerStatistics playerStatistics) {
     int sum = 0;
+    int numberOfGameModes = 0;
 
-    sum += playerStatistics.getStats().getCurrP2().getTop1().getValueInt();
-    sum += playerStatistics.getStats().getCurrP9().getTop1().getValueInt();
-    sum += playerStatistics.getStats().getCurrP10().getTop1().getValueInt();
+    if (playerStatistics.getStats().getSoloStatistics().getTop1().getValueInt() != null) {
+      sum += playerStatistics.getStats().getSoloStatistics().getTop1().getValueInt();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getSquadStatistics().getTop1().getValueInt() != null) {
+      sum += playerStatistics.getStats().getSquadStatistics().getTop1().getValueInt();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getDuoStatistics().getTop1().getValueInt() != null) {
+      sum += playerStatistics.getStats().getDuoStatistics().getTop1().getValueInt();
+      numberOfGameModes++;
+    }
 
-    return String.format("%.2f", sum / NUM_OF_GAME_MODES);
+    return String.format("%.2f", sum / numberOfGameModes);
   }
 
   /**
@@ -302,12 +364,22 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   protected double CalculateAverageWinsPercentile(PlayerStatistics playerStatistics) {
     double sum = 0;
+    double numberOfGameModes = 0;
 
-    sum += playerStatistics.getStats().getCurrP2().getTop1().getPercentile();
-    sum += playerStatistics.getStats().getCurrP9().getTop1().getPercentile();
-    sum += playerStatistics.getStats().getCurrP10().getTop1().getPercentile();
+    if (playerStatistics.getStats().getSoloStatistics().getTop1().getPercentile() != null) {
+      sum += playerStatistics.getStats().getSoloStatistics().getTop1().getPercentile();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getSquadStatistics().getTop1().getPercentile() != null) {
+      sum += playerStatistics.getStats().getSquadStatistics().getTop1().getPercentile();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getDuoStatistics().getTop1().getPercentile() != null) {
+      sum += playerStatistics.getStats().getDuoStatistics().getTop1().getPercentile();
+      numberOfGameModes++;
+    }
 
-    return sum / NUM_OF_GAME_MODES;
+    return sum / numberOfGameModes;
   }
 
   /**
@@ -318,12 +390,22 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   protected String CalculateAverageKpgVal(PlayerStatistics playerStatistics) {
     double sum = 0;
+    double numberOfGameModes = 0;
 
-    sum += playerStatistics.getStats().getCurrP2().getKpg().getValueDec();
-    sum += playerStatistics.getStats().getCurrP9().getKpg().getValueDec();
-    sum += playerStatistics.getStats().getCurrP10().getKpg().getValueDec();
+    if (playerStatistics.getStats().getSoloStatistics().getKpg().getValueDec() != null) {
+      sum += playerStatistics.getStats().getSoloStatistics().getKpg().getValueDec();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getSquadStatistics().getKpg().getValueDec() != null) {
+      sum += playerStatistics.getStats().getSquadStatistics().getKpg().getValueDec();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getDuoStatistics().getKpg().getValueDec() != null) {
+      sum += playerStatistics.getStats().getDuoStatistics().getKpg().getValueDec();
+      numberOfGameModes++;
+    }
 
-    return String.format("%.2f", sum / NUM_OF_GAME_MODES);
+    return String.format("%.2f", sum / numberOfGameModes);
   }
 
   /**
@@ -334,12 +416,22 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   protected double CalculateAverageKpgPercentile(PlayerStatistics playerStatistics) {
     double sum = 0;
+    double numberOfGameModes = 0;
 
-    sum += playerStatistics.getStats().getCurrP2().getKpg().getPercentile();
-    sum += playerStatistics.getStats().getCurrP9().getKpg().getPercentile();
-    sum += playerStatistics.getStats().getCurrP10().getKpg().getPercentile();
+    if (playerStatistics.getStats().getSoloStatistics().getKpg().getPercentile() != null) {
+      sum += playerStatistics.getStats().getSoloStatistics().getKpg().getPercentile();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getSquadStatistics().getKpg().getPercentile() != null) {
+      sum += playerStatistics.getStats().getSquadStatistics().getKpg().getPercentile();
+      numberOfGameModes++;
+    }
+    if (playerStatistics.getStats().getDuoStatistics().getKpg().getPercentile() != null) {
+      sum += playerStatistics.getStats().getDuoStatistics().getKpg().getPercentile();
+      numberOfGameModes++;
+    }
 
-    return sum / NUM_OF_GAME_MODES;
+    return sum / numberOfGameModes;
   }
 
   /**

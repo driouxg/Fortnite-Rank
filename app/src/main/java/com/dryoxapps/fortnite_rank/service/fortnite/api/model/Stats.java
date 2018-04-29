@@ -28,11 +28,11 @@ public class Stats {
     @JsonProperty("p9")
     private P9 p9;
     @JsonProperty("curr_p2")
-    private CurrP2 currP2;
+    private SoloStatistics soloStatistics;
     @JsonProperty("curr_p10")
-    private CurrP10 currP10;
+    private DuoStatistics duoStatistics;
     @JsonProperty("curr_p9")
-    private CurrP9 currP9;
+    private SquadStatistics squadStatistics;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -67,33 +67,33 @@ public class Stats {
     }
 
     @JsonProperty("curr_p2")
-    public CurrP2 getCurrP2() {
-        return currP2;
+    public SoloStatistics getSoloStatistics() {
+        return soloStatistics;
     }
 
     @JsonProperty("curr_p2")
-    public void setCurrP2(CurrP2 currP2) {
-        this.currP2 = currP2;
+    public void setSoloStatistics(SoloStatistics soloStatistics) {
+        this.soloStatistics = soloStatistics;
     }
 
     @JsonProperty("curr_p10")
-    public CurrP10 getCurrP10() {
-        return currP10;
+    public DuoStatistics getDuoStatistics() {
+        return duoStatistics;
     }
 
     @JsonProperty("curr_p10")
-    public void setCurrP10(CurrP10 currP10) {
-        this.currP10 = currP10;
+    public void setDuoStatistics(DuoStatistics duoStatistics) {
+        this.duoStatistics = duoStatistics;
     }
 
     @JsonProperty("curr_p9")
-    public CurrP9 getCurrP9() {
-        return currP9;
+    public SquadStatistics getSquadStatistics() {
+        return squadStatistics;
     }
 
     @JsonProperty("curr_p9")
-    public void setCurrP9(CurrP9 currP9) {
-        this.currP9 = currP9;
+    public void setSquadStatistics(SquadStatistics squadStatistics) {
+        this.squadStatistics = squadStatistics;
     }
 
     @JsonAnyGetter
