@@ -92,17 +92,46 @@ public class PlayerHomeActivity extends AppCompatActivity {
   public void DisplayOverallStats(PlayerStatistics playerStatistics) {
 
     try {
+      /* Set Profile rank image and values */
+      //SetTableRowTextAndImage(findViewById(R.id.profileRank),
+      //    CalculateAverageRank(playerStatistics), findViewById(R.id.profileRankName),
+      //    Double.toString(CalculateAverageRank(playerStatistics)));
+
+      /* Set Profile rank image and values */
       SetRankIcon(findViewById(R.id.profileRank),
           RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
       SetRankName(findViewById(R.id.profileRankName),
           RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
-      SetKillsTableRow(CalculateTotalKills(playerStatistics), NON_EXISTENT);
-      SetKdTableRow(CalculateAverageKdVal(playerStatistics),
-          CalculateAverageKdPercentile(playerStatistics));
-      SetWinsTableRow(CalculateAverageWinsVal(playerStatistics),
-          CalculateAverageWinsPercentile(playerStatistics));
-      SetKpgTableRow(CalculateAverageKpgVal(playerStatistics),
-          CalculateAverageKpgPercentile(playerStatistics));
+
+      /* Set Kd image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKdImage), CalculateAverageKdPercentile(playerStatistics),
+          findViewById(R.id.statKdVal), CalculateAverageKdVal(playerStatistics));
+
+      /* Set Kills image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKillsImage), NON_EXISTENT,
+          findViewById(R.id.statKdVal), CalculateTotalKills(playerStatistics));
+
+      /* Set Wins image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
+          CalculateAverageWinsPercentile(playerStatistics), findViewById(R.id.statWinsVal),
+          CalculateAverageWinsVal(playerStatistics));
+
+      /* Set Kpg image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKpgImage), CalculateAverageKpgPercentile(playerStatistics),
+          findViewById(R.id.statKpgVal), CalculateAverageKpgVal(playerStatistics));
+
+
+      //SetRankIcon(findViewById(R.id.profileRank),
+      //    RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
+      //SetRankName(findViewById(R.id.profileRankName),
+      //    RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
+      //SetKillsTableRow(CalculateTotalKills(playerStatistics), NON_EXISTENT);
+      //SetKdTableRow(CalculateAverageKdVal(playerStatistics),
+      //    CalculateAverageKdPercentile(playerStatistics));
+      //SetWinsTableRow(CalculateAverageWinsVal(playerStatistics),
+      //    CalculateAverageWinsPercentile(playerStatistics));
+      //SetKpgTableRow(CalculateAverageKpgVal(playerStatistics),
+      //    CalculateAverageKpgPercentile(playerStatistics));
     } catch (Exception e) {
       LOGGER.error("Error displaying Overall Stats: " + e.getMessage().toString());
     }
@@ -115,14 +144,28 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   public void DisplaySoloStats(SoloStatistics soloStats) {
     try {
+      /* Set Profile rank image and values */
       SetRankIcon(findViewById(R.id.profileRank),
           RankPercentile.fromDouble(soloStats.getTrnRating().getPercentile()));
       SetRankName(findViewById(R.id.profileRankName),
           RankPercentile.fromDouble(soloStats.getTrnRating().getPercentile()));
-      SetKdTableRow(soloStats.getKd().getValue(), soloStats.getKd().getPercentile());
-      SetKillsTableRow(soloStats.getKills().getValue(), NON_EXISTENT);
-      SetWinsTableRow(soloStats.getTop1().getValue(), soloStats.getTop1().getPercentile());
-      SetKpgTableRow(soloStats.getKpg().getValue(), soloStats.getKpg().getPercentile());
+
+      /* Set Kd image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKdImage), soloStats.getKd().getPercentile(),
+          findViewById(R.id.statKdVal), soloStats.getKd().getValue());
+
+      /* Set Kills image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKillsImage), NON_EXISTENT,
+          findViewById(R.id.statKdVal), soloStats.getKills().getValue());
+
+      /* Set Wins image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
+          soloStats.getTop1().getPercentile(), findViewById(R.id.statWinsVal),
+          soloStats.getTop1().getValue());
+
+      /* Set Kpg image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKpgImage), soloStats.getKpg().getPercentile(),
+          findViewById(R.id.statKpgVal), soloStats.getKpg().getValue());
     } catch (Exception e) {
       LOGGER.error("Error Displaying Solo Stats: " + e.getMessage().toString());
     }
@@ -135,14 +178,28 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   public void DisplayDuoStats(DuoStatistics duoStats) {
     try {
+      /* Set Profile rank image and values */
       SetRankIcon(findViewById(R.id.profileRank),
           RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
       SetRankName(findViewById(R.id.profileRankName),
           RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
-      SetKdTableRow(duoStats.getKd().getValue(), duoStats.getKd().getPercentile());
-      SetKillsTableRow(duoStats.getKills().getValue(), NON_EXISTENT);
-      SetWinsTableRow(duoStats.getTop1().getValue(), duoStats.getTop1().getPercentile());
-      SetKpgTableRow(duoStats.getKpg().getValue(), duoStats.getKpg().getPercentile());
+
+      /* Set Kd image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKdImage), duoStats.getKd().getPercentile(),
+          findViewById(R.id.statKdVal), duoStats.getKd().getValue());
+
+      /* Set Kills image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKillsImage), NON_EXISTENT,
+          findViewById(R.id.statKdVal), duoStats.getKills().getValue());
+
+      /* Set Wins image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
+          duoStats.getTop1().getPercentile(), findViewById(R.id.statWinsVal),
+          duoStats.getTop1().getValue());
+
+      /* Set Kpg image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKpgImage), duoStats.getKpg().getPercentile(),
+          findViewById(R.id.statKpgVal), duoStats.getKpg().getValue());
     } catch (Exception e) {
       LOGGER.error("Error displaying Duo Stats: " + e.getMessage().toString());
     }
@@ -155,14 +212,33 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   public void DisplaySquadStats(SquadStatistics squadStats) {
     try {
+      /* Set profile rank and image values */
       SetRankIcon(findViewById(R.id.profileRank),
           RankPercentile.fromDouble(squadStats.getTrnRating().getPercentile()));
       SetRankName(findViewById(R.id.profileRankName),
           RankPercentile.fromDouble(squadStats.getTrnRating().getPercentile()));
-      SetKdTableRow(squadStats.getKd().getValue(), squadStats.getKd().getPercentile());
-      SetKillsTableRow(squadStats.getKills().getValue(), NON_EXISTENT);
-      SetWinsTableRow(squadStats.getTop1().getValue(), squadStats.getTop1().getPercentile());
-      SetKpgTableRow(squadStats.getKpg().getValue(), squadStats.getKpg().getPercentile());
+
+      /* Set Profile rank image and values */
+      SetTableRowTextAndImage(findViewById(R.id.profileRank),
+          squadStats.getTrnRating().getPercentile(), findViewById(R.id.profileRankName),
+          Double.toString(squadStats.getTrnRating().getPercentile()));
+
+      /* Set Kd image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKdImage), squadStats.getKd().getPercentile(),
+          findViewById(R.id.statKdVal), squadStats.getKd().getValue());
+
+      /* Set Kills image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKillsImage), NON_EXISTENT,
+          findViewById(R.id.statKdVal), squadStats.getKills().getValue());
+
+      /* Set Wins image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
+          squadStats.getTop1().getPercentile(), findViewById(R.id.statWinsVal),
+          squadStats.getTop1().getValue());
+
+      /* Set Kpg image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKpgImage), squadStats.getKpg().getPercentile(),
+          findViewById(R.id.statKpgVal), squadStats.getKpg().getValue());
     } catch (Exception e) {
       LOGGER.error("Error displaying Squad Stats: " + e.getMessage().toString());
     }
@@ -179,56 +255,74 @@ public class PlayerHomeActivity extends AppCompatActivity {
   }
 
   /**
-   * Utility method that sets the values and image KD.
+   * Sets the values for a specified row in table.
    *
-   * @param val The kill-death value
-   * @param percentile The double value percentile
+   * @param image The image representing a rank.
+   * @param percentile The percentile value.
+   * @param textView The text view
+   * @param text The text to be set in the textview.
    */
-  protected void SetKdTableRow(String val, double percentile) {
-    SetRankIcon(findViewById(R.id.statKdImage),
-        RankPercentile.fromDouble(percentile));
-
-    SetTextView(findViewById(R.id.statKdVal), val);
+  protected void SetTableRowTextAndImage(ImageView image, double percentile, TextView textView,
+      String text) {
+    try {
+      SetRankIcon(image, RankPercentile.fromDouble(percentile));
+      SetTextView(textView, text);
+    } catch (Exception e) {
+      LOGGER.error("Error displaying values for Table Row " + String.valueOf(image.getTag()) + " :" + e.getMessage().toString());
+    }
   }
 
-  /**
-   * Utility method that sets the values and image Kills.
-   *
-   * @param val The kill-death value
-   * @param percentile The double value percentile
-   */
-  protected void SetKillsTableRow(String val, double percentile) {
-    SetRankIcon(findViewById(R.id.statKillsImage),
-        RankPercentile.fromDouble(percentile));
-
-    SetTextView(findViewById(R.id.statKillsVal), val);
-  }
-
-  /**
-   * Utility method that sets the values and image Wins.
-   *
-   * @param val The kill-death value
-   * @param percentile The double value percentile
-   */
-  protected void SetWinsTableRow(String val, double percentile) {
-    SetRankIcon(findViewById(R.id.statWinsImage),
-        RankPercentile.fromDouble(percentile));
-
-    SetTextView(findViewById(R.id.statWinsVal), val);
-  }
-
-  /**
-   * Utility method that sets the values and image Kpg.
-   *
-   * @param val The kill-death value
-   * @param percentile The double value percentile
-   */
-  protected void SetKpgTableRow(String val, double percentile) {
-    SetRankIcon(findViewById(R.id.statKpgImage),
-        RankPercentile.fromDouble(percentile));
-
-    SetTextView(findViewById(R.id.statKpgVal), val);
-  }
+  ///**
+  // * Utility method that sets the values and image KD.
+  // *
+  // * @param val The kill-death value
+  // * @param percentile The double value percentile
+  // */
+  //protected void SetKdTableRow(String val, double percentile) {
+  //  SetRankIcon(findViewById(R.id.statKdImage),
+  //      RankPercentile.fromDouble(percentile));
+//
+  //  SetTextView(findViewById(R.id.statKdVal), val);
+  //}
+//
+  ///**
+  // * Utility method that sets the values and image Kills.
+  // *
+  // * @param val The kill-death value
+  // * @param percentile The double value percentile
+  // */
+  //protected void SetKillsTableRow(String val, double percentile) {
+  //  SetRankIcon(findViewById(R.id.statKillsImage),
+  //      RankPercentile.fromDouble(percentile));
+//
+  //  SetTextView(findViewById(R.id.statKillsVal), val);
+  //}
+//
+  ///**
+  // * Utility method that sets the values and image Wins.
+  // *
+  // * @param val The kill-death value
+  // * @param percentile The double value percentile
+  // */
+  //protected void SetWinsTableRow(String val, double percentile) {
+  //  SetRankIcon(findViewById(R.id.statWinsImage),
+  //      RankPercentile.fromDouble(percentile));
+//
+  //  SetTextView(findViewById(R.id.statWinsVal), val);
+  //}
+//
+  ///**
+  // * Utility method that sets the values and image Kpg.
+  // *
+  // * @param val The kill-death value
+  // * @param percentile The double value percentile
+  // */
+  //protected void SetKpgTableRow(String val, double percentile) {
+  //  SetRankIcon(findViewById(R.id.statKpgImage),
+  //      RankPercentile.fromDouble(percentile));
+//
+  //  SetTextView(findViewById(R.id.statKpgVal), val);
+  //}
 
   /**
    * Utility method that calculates the percentile average for squad stats.

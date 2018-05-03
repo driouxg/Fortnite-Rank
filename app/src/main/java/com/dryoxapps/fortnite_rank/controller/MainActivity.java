@@ -3,6 +3,7 @@ package com.dryoxapps.fortnite_rank.controller;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -46,12 +47,16 @@ public class MainActivity extends AppCompatActivity {
         .setOnClickedButtonPosition(new SegmentedButtonGroup.OnClickedButtonPosition() {
           @Override
           public void onClickedButtonPosition(int position) {
-            if (position == 0) {
-              playerPlatform = PlayerPlatform.PC.toString();
-            } else if (position == 1) {
-              playerPlatform = PlayerPlatform.XBOX.toString();
-            } else if (position == 2) {
-              playerPlatform = PlayerPlatform.PSN.toString();
+            switch (position) {
+              case 0:
+                playerPlatform = PlayerPlatform.PC.toString();
+                break;
+              case 1:
+                playerPlatform = PlayerPlatform.XBOX.toString();
+                break;
+              case 2:
+                playerPlatform = PlayerPlatform.PSN.toString();
+              break;
             }
           }
         });
@@ -77,19 +82,12 @@ public class MainActivity extends AppCompatActivity {
               @SuppressWarnings("unchecked")
               @Override
               public void PlayerFoundHandler(PlayerStatistics playerStatistics) {
-                // Go to player page
-                Intent intent = new Intent(getApplicationContext(), PlayerHomeActivity.class);
-                System.out.println("Player Found -----------------");
-                PlayerFound(view, intent, playerStatistics);
-                searchingForPlayer = false;
+                PlayerFound(view, playerStatistics);
               }
 
               @Override
               public void PlayerNotFoundHandler() {
-                // Display error to user
-                Toast.makeText(MainActivity.this, ERROR_MESSAGE, Toast.LENGTH_SHORT).show();
-                System.out.println("SOMETHING WENT WRONG !!!!!!!!!!!!");
-                searchingForPlayer = false;
+                PlayerNotFound();
               }
             });
         fortniteApiServiceProvider.execute(playerPlatform, playerName);
@@ -98,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("EXCEPTION IN SEARCH PAGE: " + e.toString());
       }
     } else {
-      Toast.makeText(MainActivity.this, ERROR_MESSAGE_TIMER , Toast.LENGTH_SHORT).show();
+      Toast.makeText(MainActivity.this, ERROR_MESSAGE_TIMER, Toast.LENGTH_SHORT).show();
     }
   }
 
@@ -106,13 +104,13 @@ public class MainActivity extends AppCompatActivity {
    * Redirects the user to the specified player page.
    *
    * @param view The view
-   * @param intent The intent that will perform the redirection
    * @param playerStatistics The POJO containing player statistics.
    */
-  protected void PlayerFound(View view, Intent intent, PlayerStatistics playerStatistics) {
+  protected void PlayerFound(View view, PlayerStatistics playerStatistics) {
     // Create bundle for data passing.
     Bundle bundle = new Bundle();
 
+    Intent intent = new Intent(getApplicationContext(), PlayerHomeActivity.class);
     intent.putExtra(BUNDLE_OBJECT_NAME, new Gson().toJson(playerStatistics));
 
     // Put the bundle in the intent.
@@ -122,6 +120,26 @@ public class MainActivity extends AppCompatActivity {
     startActivity(intent);
   }
 
+  /**
+   * Displays an error message and resets the searchingForPlayer flag to false;
+   */
+  protected void PlayerNotFound() {
+    DisplayErrorMessage(ERROR_MESSAGE);
+    searchingForPlayer = false;
+  }
+
+  /**
+   * Displays an error message to the user.
+   *
+   * @param errorMessage The error message to be displayed to the user.
+   */
+  protected void DisplayErrorMessage(String errorMessage) {
+    Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+  }
+
+  /**
+   * Creates a timer and sets the timer to perform an action
+   */
   protected void StartTimer() {
     timer = new Timer();
 
