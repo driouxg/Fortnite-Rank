@@ -16,6 +16,8 @@ import co.ceryle.segmentedbutton.SegmentedButtonGroup;
 import com.google.gson.Gson;
 import java.util.Timer;
 import java.util.TimerTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class implements the Main Activity.
@@ -24,9 +26,11 @@ import java.util.TimerTask;
  */
 public class MainActivity extends AppCompatActivity {
 
-  private FortniteApiServiceProvider fortniteApiServiceProvider;
-  Timer timer;
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(MainActivity.class);
 
+  Timer timer;
+  private FortniteApiServiceProvider fortniteApiServiceProvider;
   private boolean searchingForPlayer = false;
   private boolean timerRunning = false;
   private String playerPlatform = PlayerPlatform.PC.toString();
@@ -41,8 +45,7 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
 
     // Create the Segmented Button Group, and change the value based on selection.
-    SegmentedButtonGroup segmentedButtonGroup = (SegmentedButtonGroup) findViewById(
-        R.id.segmentedButtonGroup);
+    SegmentedButtonGroup segmentedButtonGroup = findViewById(R.id.segmentedButtonGroup);
     segmentedButtonGroup
         .setOnClickedButtonPosition(new SegmentedButtonGroup.OnClickedButtonPosition() {
           @Override
@@ -56,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
               case 2:
                 playerPlatform = PlayerPlatform.PSN.toString();
-              break;
+                break;
             }
           }
         });
@@ -64,51 +67,62 @@ public class MainActivity extends AppCompatActivity {
 
   /**
    * Redirects the view to the player's home screen.
-   *
-   * @param view The corresponding view object for this activity class.
    */
   public void SearchForPlayer(View view) {
-    String playerName = ((EditText) findViewById(R.id.searchName)).getText().toString();
-
     if (!searchingForPlayer && !timerRunning) {
-      searchingForPlayer = true;
-      timerRunning = true;
-      fortniteApiServiceProvider = new FortniteApiServiceProvider();
       StartTimer();
-
-      try {
-        fortniteApiServiceProvider
-            .setDataDownloadListener(new FortniteApiServiceProvider.DataDownloadListener() {
-              @SuppressWarnings("unchecked")
-              @Override
-              public void PlayerFoundHandler(PlayerStatistics playerStatistics) {
-                PlayerFound(view, playerStatistics);
-              }
-
-              @Override
-              public void PlayerNotFoundHandler() {
-                PlayerNotFound();
-              }
-            });
-        fortniteApiServiceProvider.execute(playerPlatform, playerName);
-
-      } catch (Exception e) {
-        System.out.println("EXCEPTION IN SEARCH PAGE: " + e.toString());
-      }
-    } else {
-      Toast.makeText(MainActivity.this, ERROR_MESSAGE_TIMER, Toast.LENGTH_SHORT).show();
+      PerformAsyncRequest();
+    } else if (timerRunning) {
+      DisplayErrorMessage(ERROR_MESSAGE_TIMER);
     }
+  }
+
+  /**
+   * Performs an asynchronous request
+   */
+  protected void PerformAsyncRequest() {
+    try {
+      searchingForPlayer = true;
+      fortniteApiServiceProvider = new FortniteApiServiceProvider();
+      fortniteApiServiceProvider
+          .setDataDownloadListener(new FortniteApiServiceProvider.DataDownloadListener() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public void PlayerFoundHandler(PlayerStatistics playerStatistics) {
+              PlayerFound(playerStatistics);
+            }
+
+            @Override
+            public void PlayerNotFoundHandler() {
+              PlayerNotFound();
+            }
+          });
+      fortniteApiServiceProvider.execute(playerPlatform, GetPlayerName());
+
+    } catch (Exception e) {
+      LOGGER.error("Error during player search: " + e.getMessage().toString());
+    }
+  }
+
+  /**
+   * Utility method that gets the searched player name from the view.
+   *
+   * @return The name of a player from the view.
+   */
+  protected String GetPlayerName() {
+    return ((EditText) findViewById(R.id.searchName)).getText().toString();
   }
 
   /**
    * Redirects the user to the specified player page.
    *
-   * @param view The view
    * @param playerStatistics The POJO containing player statistics.
    */
-  protected void PlayerFound(View view, PlayerStatistics playerStatistics) {
+  protected void PlayerFound(PlayerStatistics playerStatistics) {
     // Create bundle for data passing.
     Bundle bundle = new Bundle();
+
+    System.out.println("PLAYER WAS FOUND!");
 
     Intent intent = new Intent(getApplicationContext(), PlayerHomeActivity.class);
     intent.putExtra(BUNDLE_OBJECT_NAME, new Gson().toJson(playerStatistics));
@@ -142,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
    */
   protected void StartTimer() {
     timer = new Timer();
-
+    timerRunning = true;
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
