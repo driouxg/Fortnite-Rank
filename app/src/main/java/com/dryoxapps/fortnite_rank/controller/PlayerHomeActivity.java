@@ -1,5 +1,8 @@
 package com.dryoxapps.fortnite_rank.controller;
 
+import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateAvgPercentile;
+import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateAvgValue;
+
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -8,10 +11,9 @@ import co.ceryle.segmentedbutton.SegmentedButtonGroup;
 import com.dryoxapps.fortnite_rank.R;
 import com.dryoxapps.fortnite_rank.controller.domain.RankName;
 import com.dryoxapps.fortnite_rank.controller.domain.RankPercentile;
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.DuoStatistics;
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.SoloStatistics;
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.SquadStatistics;
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStatistics;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameModes;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameMode;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStats;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,33 +37,32 @@ public class PlayerHomeActivity extends AppCompatActivity {
     setContentView(R.layout.activity_player_home);
 
     // Serialize the Bundle
-    PlayerStatistics playerStatistics = SerializeBundle(getIntent().getExtras());
+    PlayerStats playerStats = SerializeBundle(getIntent().getExtras());
 
     // Set player name
-    SetTextView(findViewById(R.id.playerName), playerStatistics.getEpicUserHandle());
+    SetTextView(findViewById(R.id.playerName), playerStats.getEpicUserHandle());
 
     // Display default statistics (Overall)
-    DisplayOverallStats(playerStatistics);
+    DisplayOverallStats(playerStats.getGameModes());
 
     // Create the Segmented Button Group, and change the value based on selection.
-    SegmentedButtonGroup segmentedButtonGroup = (SegmentedButtonGroup) findViewById(
-        R.id.segmentedButtonGroup);
+    SegmentedButtonGroup segmentedButtonGroup = findViewById(R.id.segmentedButtonGroup);
     segmentedButtonGroup
         .setOnClickedButtonPosition(new SegmentedButtonGroup.OnClickedButtonPosition() {
           @Override
           public void onClickedButtonPosition(int position) {
             switch (position) {
               case 0:
-                DisplayOverallStats(playerStatistics);
+                DisplayOverallStats(playerStats.getGameModes());
                 break;
               case 1:
-                DisplaySoloStats(playerStatistics.getStats().getSoloStatistics());
+                DisplayStatistics(playerStats.getGameModes().getSoloStatistics());
                 break;
               case 2:
-                DisplayDuoStats(playerStatistics.getStats().getDuoStatistics());
+                DisplayStatistics(playerStats.getGameModes().getDuoStatistics());
                 break;
               case 3:
-                DisplaySquadStats(playerStatistics.getStats().getSquadStatistics());
+                DisplayStatistics(playerStats.getGameModes().getSquadStatistics());
                 break;
             }
           }
@@ -72,175 +73,93 @@ public class PlayerHomeActivity extends AppCompatActivity {
    * Utility method that serializes the bundle object, which is a JSON object.
    *
    * @param bundle The bundle object
-   * @return A PlayerStatistics POJO containing all player statistics
+   * @return A PlayerStats POJO containing all player statistics
    */
-  protected PlayerStatistics SerializeBundle(Bundle bundle) {
+  protected PlayerStats SerializeBundle(Bundle bundle) {
     String jsonMyObject = null;
 
     if (bundle != null) {
       jsonMyObject = bundle.getString(BUNDLE_OBJECT_NAME);
     }
 
-    return (new Gson().fromJson(jsonMyObject, PlayerStatistics.class));
+    return (new Gson().fromJson(jsonMyObject, PlayerStats.class));
   }
 
   /**
    * Displays statistics for the overall tab.
    *
-   * @param playerStatistics The PlayerStatistics POJO.
+   * @param gameModes The GameModes POJO.
    */
-  public void DisplayOverallStats(PlayerStatistics playerStatistics) {
+  public void DisplayOverallStats(GameModes gameModes) {
 
     try {
       /* Set Profile rank image and values */
-      //SetTableRowTextAndImage(findViewById(R.id.profileRank),
-      //    CalculateAverageRank(playerStatistics), findViewById(R.id.profileRankName),
-      //    Double.toString(CalculateAverageRank(playerStatistics)));
-
-      /* Set Profile rank image and values */
       SetRankIcon(findViewById(R.id.profileRank),
-          RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
+          RankPercentile.fromDouble(CalculateAvgPercentile(gameModes, "trnRating")));
       SetRankName(findViewById(R.id.profileRankName),
-          RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
+          RankPercentile.fromDouble(CalculateAvgPercentile(gameModes, "trnRating")));
 
-      /* Set Kd image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKdImage), CalculateAverageKdPercentile(playerStatistics),
-          findViewById(R.id.statKdVal), CalculateAverageKdVal(playerStatistics));
+      /* Set GameModeStats image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKdImage),
+          CalculateAvgPercentile(gameModes, "kd"),
+          findViewById(R.id.statKdVal), ToString(CalculateAvgValue(gameModes, "kd")));
 
       /* Set Kills image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKillsImage), NON_EXISTENT,
-          findViewById(R.id.statKdVal), CalculateTotalKills(playerStatistics));
+      SetTableRowTextAndImage(findViewById(R.id.statKillsImage),
+          CalculateAvgPercentile(gameModes, "kills"),
+          findViewById(R.id.statKillsVal), ToString(CalculateAvgValue(gameModes, "kills")));
 
       /* Set Wins image and values */
       SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
-          CalculateAverageWinsPercentile(playerStatistics), findViewById(R.id.statWinsVal),
-          CalculateAverageWinsVal(playerStatistics));
+          CalculateAvgPercentile(gameModes, "wins"), findViewById(R.id.statWinsVal),
+          ToString(CalculateAvgValue(gameModes, "wins")));
 
       /* Set Kpg image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKpgImage), CalculateAverageKpgPercentile(playerStatistics),
-          findViewById(R.id.statKpgVal), CalculateAverageKpgVal(playerStatistics));
-
-
-      //SetRankIcon(findViewById(R.id.profileRank),
-      //    RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
-      //SetRankName(findViewById(R.id.profileRankName),
-      //    RankPercentile.fromDouble(CalculateAverageRank(playerStatistics)));
-      //SetKillsTableRow(CalculateTotalKills(playerStatistics), NON_EXISTENT);
-      //SetKdTableRow(CalculateAverageKdVal(playerStatistics),
-      //    CalculateAverageKdPercentile(playerStatistics));
-      //SetWinsTableRow(CalculateAverageWinsVal(playerStatistics),
-      //    CalculateAverageWinsPercentile(playerStatistics));
-      //SetKpgTableRow(CalculateAverageKpgVal(playerStatistics),
-      //    CalculateAverageKpgPercentile(playerStatistics));
+      SetTableRowTextAndImage(findViewById(R.id.statKpgImage),
+          CalculateAvgPercentile(gameModes, "kpg"),
+          findViewById(R.id.statKpgVal), ToString(CalculateAvgValue(gameModes, "kpg")));
     } catch (Exception e) {
-      LOGGER.error("Error displaying Overall Stats: " + e.getMessage().toString());
+      LOGGER.error("Error displaying Overall GameModes: " + e.getMessage().toString());
     }
   }
 
   /**
-   * Displays statistics for the solo tab.
-   *
-   * @param soloStats The solo-gamemode POJO.
+   * Displays the statistics for the currently selected game mmode.
    */
-  public void DisplaySoloStats(SoloStatistics soloStats) {
+  protected void DisplayStatistics(GameMode gameMode) {
     try {
+      if (gameMode != null) {
       /* Set Profile rank image and values */
-      SetRankIcon(findViewById(R.id.profileRank),
-          RankPercentile.fromDouble(soloStats.getTrnRating().getPercentile()));
-      SetRankName(findViewById(R.id.profileRankName),
-          RankPercentile.fromDouble(soloStats.getTrnRating().getPercentile()));
+        SetRankIcon(findViewById(R.id.profileRank),
+            RankPercentile.fromDouble(gameMode.getTrnRating().getPercentile()));
+        SetRankName(findViewById(R.id.profileRankName),
+            RankPercentile.fromDouble(gameMode.getTrnRating().getPercentile()));
+      } else {
+        SetRankIcon(findViewById(R.id.profileRank), RankPercentile.fromDouble(NON_EXISTENT));
+        SetRankName(findViewById(R.id.profileRankName), RankPercentile.fromDouble(NON_EXISTENT));
+      }
 
-      /* Set Kd image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKdImage), soloStats.getKd().getPercentile(),
-          findViewById(R.id.statKdVal), soloStats.getKd().getValue());
+      /* Set GameModeStats image and values */
+      SetTableRowTextAndImage(findViewById(R.id.statKdImage),
+          gameMode.getKd().getPercentile(),
+          findViewById(R.id.statKdVal), gameMode.getKd().getValue());
 
       /* Set Kills image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKillsImage), NON_EXISTENT,
-          findViewById(R.id.statKdVal), soloStats.getKills().getValue());
+      SetTableRowTextAndImage(findViewById(R.id.statKillsImage),
+          gameMode.getKills().getPercentile(),
+          findViewById(R.id.statKillsVal), gameMode.getKills().getValue());
 
       /* Set Wins image and values */
       SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
-          soloStats.getTop1().getPercentile(), findViewById(R.id.statWinsVal),
-          soloStats.getTop1().getValue());
+          gameMode.getWins().getPercentile(),
+          findViewById(R.id.statWinsVal), gameMode.getWins().getValue());
 
       /* Set Kpg image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKpgImage), soloStats.getKpg().getPercentile(),
-          findViewById(R.id.statKpgVal), soloStats.getKpg().getValue());
+      SetTableRowTextAndImage(findViewById(R.id.statKpgImage),
+          gameMode.getKpg().getPercentile(),
+          findViewById(R.id.statKpgVal), gameMode.getKpg().getValue());
     } catch (Exception e) {
-      LOGGER.error("Error Displaying Solo Stats: " + e.getMessage().toString());
-    }
-  }
-
-  /**
-   * Displays statistics for the duo tab.
-   *
-   * @param duoStats The duo-gamemode POJO.
-   */
-  public void DisplayDuoStats(DuoStatistics duoStats) {
-    try {
-      /* Set Profile rank image and values */
-      SetRankIcon(findViewById(R.id.profileRank),
-          RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
-      SetRankName(findViewById(R.id.profileRankName),
-          RankPercentile.fromDouble(duoStats.getTrnRating().getPercentile()));
-
-      /* Set Kd image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKdImage), duoStats.getKd().getPercentile(),
-          findViewById(R.id.statKdVal), duoStats.getKd().getValue());
-
-      /* Set Kills image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKillsImage), NON_EXISTENT,
-          findViewById(R.id.statKdVal), duoStats.getKills().getValue());
-
-      /* Set Wins image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
-          duoStats.getTop1().getPercentile(), findViewById(R.id.statWinsVal),
-          duoStats.getTop1().getValue());
-
-      /* Set Kpg image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKpgImage), duoStats.getKpg().getPercentile(),
-          findViewById(R.id.statKpgVal), duoStats.getKpg().getValue());
-    } catch (Exception e) {
-      LOGGER.error("Error displaying Duo Stats: " + e.getMessage().toString());
-    }
-  }
-
-  /**
-   * Displays statistics for the squad tab.
-   *
-   * @param squadStats The squad-gamemode POJO.
-   */
-  public void DisplaySquadStats(SquadStatistics squadStats) {
-    try {
-      /* Set profile rank and image values */
-      SetRankIcon(findViewById(R.id.profileRank),
-          RankPercentile.fromDouble(squadStats.getTrnRating().getPercentile()));
-      SetRankName(findViewById(R.id.profileRankName),
-          RankPercentile.fromDouble(squadStats.getTrnRating().getPercentile()));
-
-      /* Set Profile rank image and values */
-      SetTableRowTextAndImage(findViewById(R.id.profileRank),
-          squadStats.getTrnRating().getPercentile(), findViewById(R.id.profileRankName),
-          Double.toString(squadStats.getTrnRating().getPercentile()));
-
-      /* Set Kd image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKdImage), squadStats.getKd().getPercentile(),
-          findViewById(R.id.statKdVal), squadStats.getKd().getValue());
-
-      /* Set Kills image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKillsImage), NON_EXISTENT,
-          findViewById(R.id.statKdVal), squadStats.getKills().getValue());
-
-      /* Set Wins image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
-          squadStats.getTop1().getPercentile(), findViewById(R.id.statWinsVal),
-          squadStats.getTop1().getValue());
-
-      /* Set Kpg image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKpgImage), squadStats.getKpg().getPercentile(),
-          findViewById(R.id.statKpgVal), squadStats.getKpg().getValue());
-    } catch (Exception e) {
-      LOGGER.error("Error displaying Squad Stats: " + e.getMessage().toString());
+      LOGGER.error("Error Displaying Statistics: " + e.getMessage().toString());
     }
   }
 
@@ -268,264 +187,35 @@ public class PlayerHomeActivity extends AppCompatActivity {
       SetRankIcon(image, RankPercentile.fromDouble(percentile));
       SetTextView(textView, text);
     } catch (Exception e) {
-      LOGGER.error("Error displaying values for Table Row " + String.valueOf(image.getTag()) + " :" + e.getMessage().toString());
+      LOGGER.error(
+          "Error displaying values for Table Row " + String.valueOf(image.getTag()) + " :" + e
+              .getMessage().toString());
     }
   }
 
-  ///**
-  // * Utility method that sets the values and image KD.
-  // *
-  // * @param val The kill-death value
-  // * @param percentile The double value percentile
-  // */
-  //protected void SetKdTableRow(String val, double percentile) {
-  //  SetRankIcon(findViewById(R.id.statKdImage),
-  //      RankPercentile.fromDouble(percentile));
-//
-  //  SetTextView(findViewById(R.id.statKdVal), val);
-  //}
-//
-  ///**
-  // * Utility method that sets the values and image Kills.
-  // *
-  // * @param val The kill-death value
-  // * @param percentile The double value percentile
-  // */
-  //protected void SetKillsTableRow(String val, double percentile) {
-  //  SetRankIcon(findViewById(R.id.statKillsImage),
-  //      RankPercentile.fromDouble(percentile));
-//
-  //  SetTextView(findViewById(R.id.statKillsVal), val);
-  //}
-//
-  ///**
-  // * Utility method that sets the values and image Wins.
-  // *
-  // * @param val The kill-death value
-  // * @param percentile The double value percentile
-  // */
-  //protected void SetWinsTableRow(String val, double percentile) {
-  //  SetRankIcon(findViewById(R.id.statWinsImage),
-  //      RankPercentile.fromDouble(percentile));
-//
-  //  SetTextView(findViewById(R.id.statWinsVal), val);
-  //}
-//
-  ///**
-  // * Utility method that sets the values and image Kpg.
-  // *
-  // * @param val The kill-death value
-  // * @param percentile The double value percentile
-  // */
-  //protected void SetKpgTableRow(String val, double percentile) {
-  //  SetRankIcon(findViewById(R.id.statKpgImage),
-  //      RankPercentile.fromDouble(percentile));
-//
-  //  SetTextView(findViewById(R.id.statKpgVal), val);
-  //}
-
   /**
-   * Utility method that calculates the percentile average for squad stats.
+   * Retrieves a list of POJOs for solo, duo, and squad statistics
+   * objects.
    *
-   * @param playerStatistics The statistics for a player.
-   * @return The average percentile.
+   * @param gameModes A POJO containing the game modes.
+   * @return A list a game mode objects.
    */
-  protected double CalculateAverageRank(PlayerStatistics playerStatistics) {
-    double sum = 0;
-    double numberOfGameModes = 0;
+  protected GameMode[] GetGameModes(GameModes gameModes) {
+    GameMode[] gameMode = {gameModes.getSoloStatistics(),
+        gameModes.getDuoStatistics(),
+        gameModes.getSquadStatistics()};
 
-    if (playerStatistics.getStats().getSoloStatistics().getTrnRating().getPercentile() != null) {
-      sum += playerStatistics.getStats().getSoloStatistics().getTrnRating().getPercentile();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getSquadStatistics().getTrnRating().getPercentile() != null) {
-      sum += playerStatistics.getStats().getSquadStatistics().getTrnRating().getPercentile();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getDuoStatistics().getTrnRating().getPercentile() != null) {
-      sum += playerStatistics.getStats().getDuoStatistics().getTrnRating().getPercentile();
-      numberOfGameModes++;
-    }
-
-    return sum / numberOfGameModes;
+    return gameMode;
   }
 
   /**
-   * Utility method that calculates the total sum of kills;
+   * Stringifies a double value to two decimal places.
    *
-   * @param playerStatistics The statistics for a player
-   * @return The total kills
+   * @param value The double value.
+   * @return A stringified double value.
    */
-  protected String CalculateTotalKills(PlayerStatistics playerStatistics) {
-    int sum = 0;
-
-    if (playerStatistics.getStats().getSoloStatistics().getKills().getValueInt() != null) {
-      sum += playerStatistics.getStats().getSoloStatistics().getKills().getValueInt();
-    }
-    if (playerStatistics.getStats().getSquadStatistics().getKills().getValueInt() != null) {
-      sum += playerStatistics.getStats().getSquadStatistics().getKills().getValueInt();
-    }
-    if (playerStatistics.getStats().getDuoStatistics().getKills().getValueInt() != null) {
-      sum += playerStatistics.getStats().getDuoStatistics().getKills().getValueInt();
-    }
-
-    return Integer.toString(sum);
-  }
-
-  /**
-   * Utility method that calculates the average percentile rank for Kd
-   *
-   * @param playerStatistics The statistics for a player
-   * @return The average percentile for Kd
-   */
-  protected double CalculateAverageKdPercentile(PlayerStatistics playerStatistics) {
-    double sum = 0;
-    double numberOfGameModes = 0;
-
-    if (playerStatistics.getStats().getSoloStatistics().getKd().getPercentile() != null) {
-      sum += playerStatistics.getStats().getSoloStatistics().getKd().getPercentile();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getSquadStatistics().getKd().getPercentile() != null) {
-      sum += playerStatistics.getStats().getSquadStatistics().getKd().getPercentile();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getDuoStatistics().getKd().getPercentile() != null) {
-      sum += playerStatistics.getStats().getDuoStatistics().getKd().getPercentile();
-      numberOfGameModes++;
-    }
-
-    return sum / numberOfGameModes;
-  }
-
-  /**
-   * Utility method that calculates the average value for Kd.
-   *
-   * @param playerStatistics The statistics for a player
-   * @return The average value for Kd.
-   */
-  protected String CalculateAverageKdVal(PlayerStatistics playerStatistics) {
-    double sum = 0;
-    double numberOfGameModes = 0;
-
-    if (playerStatistics.getStats().getSoloStatistics().getKd().getValueDec() != null) {
-      sum += playerStatistics.getStats().getSoloStatistics().getKd().getValueDec();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getSquadStatistics().getKd().getValueDec() != null) {
-      sum += playerStatistics.getStats().getSquadStatistics().getKd().getValueDec();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getDuoStatistics().getKd().getValueDec() != null) {
-      sum += playerStatistics.getStats().getDuoStatistics().getKd().getValueDec();
-      numberOfGameModes++;
-    }
-
-    return String.format("%.2f", sum / numberOfGameModes);
-  }
-
-  /**
-   * Utility method that calculates the average value for wins.
-   *
-   * @param playerStatistics The statistics for a player
-   * @return The average value for wins
-   */
-  protected String CalculateAverageWinsVal(PlayerStatistics playerStatistics) {
-    int sum = 0;
-    int numberOfGameModes = 0;
-
-    if (playerStatistics.getStats().getSoloStatistics().getTop1().getValueInt() != null) {
-      sum += playerStatistics.getStats().getSoloStatistics().getTop1().getValueInt();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getSquadStatistics().getTop1().getValueInt() != null) {
-      sum += playerStatistics.getStats().getSquadStatistics().getTop1().getValueInt();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getDuoStatistics().getTop1().getValueInt() != null) {
-      sum += playerStatistics.getStats().getDuoStatistics().getTop1().getValueInt();
-      numberOfGameModes++;
-    }
-
-    return String.format("%.2f", sum / numberOfGameModes);
-  }
-
-  /**
-   * Utility method that calculates the average percentile for for Wins
-   *
-   * @param playerStatistics The statistics for a player
-   * @return The average percentile for wins
-   */
-  protected double CalculateAverageWinsPercentile(PlayerStatistics playerStatistics) {
-    double sum = 0;
-    double numberOfGameModes = 0;
-
-    if (playerStatistics.getStats().getSoloStatistics().getTop1().getPercentile() != null) {
-      sum += playerStatistics.getStats().getSoloStatistics().getTop1().getPercentile();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getSquadStatistics().getTop1().getPercentile() != null) {
-      sum += playerStatistics.getStats().getSquadStatistics().getTop1().getPercentile();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getDuoStatistics().getTop1().getPercentile() != null) {
-      sum += playerStatistics.getStats().getDuoStatistics().getTop1().getPercentile();
-      numberOfGameModes++;
-    }
-
-    return sum / numberOfGameModes;
-  }
-
-  /**
-   * Utility method that calculates the average value for wins.
-   *
-   * @param playerStatistics The statistics for a player
-   * @return The average value for Kpg
-   */
-  protected String CalculateAverageKpgVal(PlayerStatistics playerStatistics) {
-    double sum = 0;
-    double numberOfGameModes = 0;
-
-    if (playerStatistics.getStats().getSoloStatistics().getKpg().getValueDec() != null) {
-      sum += playerStatistics.getStats().getSoloStatistics().getKpg().getValueDec();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getSquadStatistics().getKpg().getValueDec() != null) {
-      sum += playerStatistics.getStats().getSquadStatistics().getKpg().getValueDec();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getDuoStatistics().getKpg().getValueDec() != null) {
-      sum += playerStatistics.getStats().getDuoStatistics().getKpg().getValueDec();
-      numberOfGameModes++;
-    }
-
-    return String.format("%.2f", sum / numberOfGameModes);
-  }
-
-  /**
-   * Utility method that calculates the average percentile for for Kpg.
-   *
-   * @param playerStatistics The statistics for a player
-   * @return The average percentile for Kpg
-   */
-  protected double CalculateAverageKpgPercentile(PlayerStatistics playerStatistics) {
-    double sum = 0;
-    double numberOfGameModes = 0;
-
-    if (playerStatistics.getStats().getSoloStatistics().getKpg().getPercentile() != null) {
-      sum += playerStatistics.getStats().getSoloStatistics().getKpg().getPercentile();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getSquadStatistics().getKpg().getPercentile() != null) {
-      sum += playerStatistics.getStats().getSquadStatistics().getKpg().getPercentile();
-      numberOfGameModes++;
-    }
-    if (playerStatistics.getStats().getDuoStatistics().getKpg().getPercentile() != null) {
-      sum += playerStatistics.getStats().getDuoStatistics().getKpg().getPercentile();
-      numberOfGameModes++;
-    }
-
-    return sum / numberOfGameModes;
+  protected String ToString(double value) {
+    return String.format("%.2f", value);
   }
 
   /**
@@ -617,6 +307,9 @@ public class PlayerHomeActivity extends AppCompatActivity {
           break;
         case BRONZE5:
           image.setImageResource(R.drawable.bronze5);
+          break;
+        case NOT_RANKED:
+          image.setImageResource(R.drawable.question);
           break;
       }
     }
@@ -711,6 +404,9 @@ public class PlayerHomeActivity extends AppCompatActivity {
           break;
         case BRONZE5:
           textView.setText(RankName.BRONZE5.toString());
+          break;
+        case NOT_RANKED:
+          textView.setText(RankName.NOT_RANKED.toString());
           break;
       }
     }

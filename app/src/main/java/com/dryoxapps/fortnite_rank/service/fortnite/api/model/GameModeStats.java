@@ -15,13 +15,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "label",
     "field",
     "category",
-    "valueInt",
+    "valueDec",
     "value",
     "rank",
     "percentile",
     "displayValue"
 })
-public class Kills {
+public class GameModeStats {
 
     @JsonProperty("label")
     private String label;
@@ -29,8 +29,8 @@ public class Kills {
     private String field;
     @JsonProperty("category")
     private String category;
-    @JsonProperty("valueInt")
-    private Integer valueInt;
+    @JsonProperty("valueDec")
+    private Double valueDec;
     @JsonProperty("value")
     private String value;
     @JsonProperty("rank")
@@ -72,14 +72,14 @@ public class Kills {
         this.category = category;
     }
 
-    @JsonProperty("valueInt")
-    public Integer getValueInt() {
-        return valueInt;
+    @JsonProperty("valueDec")
+    public Double getValueDec() {
+        return valueDec;
     }
 
-    @JsonProperty("valueInt")
-    public void setValueInt(Integer valueInt) {
-        this.valueInt = valueInt;
+    @JsonProperty("valueDec")
+    public void setValueDec(Double valueDec) {
+        this.valueDec = valueDec;
     }
 
     @JsonProperty("value")

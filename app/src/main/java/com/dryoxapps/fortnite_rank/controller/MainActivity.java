@@ -3,14 +3,13 @@ package com.dryoxapps.fortnite_rank.controller;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Display;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 import com.dryoxapps.fortnite_rank.R;
 import com.dryoxapps.fortnite_rank.controller.domain.PlayerPlatform;
 import com.dryoxapps.fortnite_rank.service.fortnite.FortniteApiServiceProvider;
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStatistics;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStats;
 
 import co.ceryle.segmentedbutton.SegmentedButtonGroup;
 import com.google.gson.Gson;
@@ -88,8 +87,8 @@ public class MainActivity extends AppCompatActivity {
           .setDataDownloadListener(new FortniteApiServiceProvider.DataDownloadListener() {
             @SuppressWarnings("unchecked")
             @Override
-            public void PlayerFoundHandler(PlayerStatistics playerStatistics) {
-              PlayerFound(playerStatistics);
+            public void PlayerFoundHandler(PlayerStats playerStats) {
+              PlayerFound(playerStats);
             }
 
             @Override
@@ -116,16 +115,14 @@ public class MainActivity extends AppCompatActivity {
   /**
    * Redirects the user to the specified player page.
    *
-   * @param playerStatistics The POJO containing player statistics.
+   * @param playerStats The POJO containing player statistics.
    */
-  protected void PlayerFound(PlayerStatistics playerStatistics) {
+  protected void PlayerFound(PlayerStats playerStats) {
     // Create bundle for data passing.
     Bundle bundle = new Bundle();
 
-    System.out.println("PLAYER WAS FOUND!");
-
     Intent intent = new Intent(getApplicationContext(), PlayerHomeActivity.class);
-    intent.putExtra(BUNDLE_OBJECT_NAME, new Gson().toJson(playerStatistics));
+    intent.putExtra(BUNDLE_OBJECT_NAME, new Gson().toJson(playerStats));
 
     // Put the bundle in the intent.
     intent.putExtras(bundle);

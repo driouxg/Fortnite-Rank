@@ -18,11 +18,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "platformName",
     "platformNameLong",
     "epicUserHandle",
-    "stats",
+    "gameModes",
     "lifeTimeStats",
     "recentMatches"
 })
-public class PlayerStatistics {
+public class PlayerStats {
 
     @JsonProperty("accountId")
     private String accountId;
@@ -34,8 +34,8 @@ public class PlayerStatistics {
     private String platformNameLong;
     @JsonProperty("epicUserHandle")
     private String epicUserHandle;
-    @JsonProperty("stats")
-    private Stats stats;
+    @JsonProperty("gameModes")
+    private GameModes gameModes;
     @JsonProperty("lifeTimeStats")
     private List<LifeTimeStat> lifeTimeStats = null;
     @JsonProperty("recentMatches")
@@ -94,13 +94,13 @@ public class PlayerStatistics {
     }
 
     @JsonProperty("stats")
-    public Stats getStats() {
-        return stats;
+    public GameModes getGameModes() {
+        return gameModes;
     }
 
     @JsonProperty("stats")
-    public void setStats(Stats stats) {
-        this.stats = stats;
+    public void setGameModes(GameModes gameModes) {
+        this.gameModes = gameModes;
     }
 
     @JsonProperty("lifeTimeStats")

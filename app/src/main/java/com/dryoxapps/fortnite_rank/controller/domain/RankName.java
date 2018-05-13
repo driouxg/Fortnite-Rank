@@ -58,7 +58,9 @@ public enum RankName {
 
   BRONZE4("Bronze 4"),
 
-  BRONZE5("Bronze 5");
+  BRONZE5("Bronze 5"),
+
+  NOT_RANKED("Not Ranked");
 
   private String name;
 

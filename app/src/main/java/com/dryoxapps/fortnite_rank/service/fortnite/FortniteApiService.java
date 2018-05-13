@@ -1,7 +1,5 @@
 package com.dryoxapps.fortnite_rank.service.fortnite;
 
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStatistics;
-
 /**
  * This interface defines the methods of the service.
  *
@@ -16,5 +14,5 @@ public interface FortniteApiService {
      * @param name     The name of the player.
      * @return The entire DTO containing all JSON.
      */
-    //PlayerStatistics GetPlayerStatistics(String platform, String name);
+    //PlayerStats GetPlayerStatistics(String platform, String name);
 }

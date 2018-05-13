@@ -1,20 +1,19 @@
 package com.dryoxapps.fortnite_rank.service.fortnite;
 
 import android.os.AsyncTask;
-import java.util.Objects;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStatistics;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStats;
 
 /**
  * This class implements the FortniteApiService interface.
  *
  * @author Drioux.Guidry
  */
-public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerStatistics> {
+public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerStats> {
 
   private RestTemplate fortniteClient = new RestTemplate();
 
@@ -54,7 +53,7 @@ public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerSt
    * @return A POJO containing statistical data for a player
    */
   @Override
-  protected PlayerStatistics doInBackground(String... params) {
+  protected PlayerStats doInBackground(String... params) {
 
     // Set the headers for the request
     HttpHeaders headers = new HttpHeaders();
@@ -62,9 +61,9 @@ public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerSt
     HttpEntity entity = new HttpEntity(headers);
 
     // Perform the GET request
-    ResponseEntity<PlayerStatistics> respEntity = fortniteClient
+    ResponseEntity<PlayerStats> respEntity = fortniteClient
         .exchange(BuildUri(params[PLAYER_PLATFORM_INDEX], params[PLAYER_NAME_INDEX]),
-            HttpMethod.GET, entity, PlayerStatistics.class);
+            HttpMethod.GET, entity, PlayerStats.class);
 
     // Check for No Player Found
     if (respEntity.getBody().getAdditionalProperties().get(ERROR_KEY) != null) {
@@ -80,7 +79,7 @@ public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerSt
    * @param result A POJO containing a player's statistical data.
    */
   @Override
-  protected void onPostExecute(PlayerStatistics result) {
+  protected void onPostExecute(PlayerStats result) {
     if (result != null) {
       dataDownloadListener.PlayerFoundHandler(result);
     } else {
@@ -93,7 +92,7 @@ public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerSt
    */
   public static interface DataDownloadListener {
 
-    void PlayerFoundHandler(PlayerStatistics playerStatistics);
+    void PlayerFoundHandler(PlayerStats playerStats);
 
     void PlayerNotFoundHandler();
   }

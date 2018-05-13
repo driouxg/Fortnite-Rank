@@ -8,6 +8,8 @@ package com.dryoxapps.fortnite_rank.controller.domain;
  */
 public enum RankPercentile {
 
+  NOT_RANKED(0),
+
   CHAMPION(0.1),
 
   SOUL(0.13),
