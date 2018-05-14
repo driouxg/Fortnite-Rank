@@ -15,6 +15,7 @@ import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameModes;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameMode;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStats;
 import com.google.gson.Gson;
+import java.text.DecimalFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ public class PlayerHomeActivity extends AppCompatActivity {
       .getLogger(PlayerHomeActivity.class);
 
   private static String BUNDLE_OBJECT_NAME = "myObject";
-  private static double NON_EXISTENT = 500;
+  private static double NON_EXISTENT = 0;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -134,33 +135,43 @@ public class PlayerHomeActivity extends AppCompatActivity {
             RankPercentile.fromDouble(gameMode.getTrnRating().getPercentile()));
         SetRankName(findViewById(R.id.profileRankName),
             RankPercentile.fromDouble(gameMode.getTrnRating().getPercentile()));
-      } else {
-        SetRankIcon(findViewById(R.id.profileRank), RankPercentile.fromDouble(NON_EXISTENT));
-        SetRankName(findViewById(R.id.profileRankName), RankPercentile.fromDouble(NON_EXISTENT));
-      }
 
       /* Set GameModeStats image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKdImage),
-          gameMode.getKd().getPercentile(),
-          findViewById(R.id.statKdVal), gameMode.getKd().getValue());
+        SetTableRowTextAndImage(findViewById(R.id.statKdImage),
+            gameMode.getKd().getPercentile(),
+            findViewById(R.id.statKdVal), gameMode.getKd().getValue());
 
       /* Set Kills image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKillsImage),
-          gameMode.getKills().getPercentile(),
-          findViewById(R.id.statKillsVal), gameMode.getKills().getValue());
+        SetTableRowTextAndImage(findViewById(R.id.statKillsImage),
+            gameMode.getKills().getPercentile(),
+            findViewById(R.id.statKillsVal), gameMode.getKills().getValue());
 
       /* Set Wins image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
-          gameMode.getWins().getPercentile(),
-          findViewById(R.id.statWinsVal), gameMode.getWins().getValue());
+        SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
+            gameMode.getWins().getPercentile(),
+            findViewById(R.id.statWinsVal), gameMode.getWins().getValue());
 
       /* Set Kpg image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKpgImage),
-          gameMode.getKpg().getPercentile(),
-          findViewById(R.id.statKpgVal), gameMode.getKpg().getValue());
+        SetTableRowTextAndImage(findViewById(R.id.statKpgImage),
+            gameMode.getKpg().getPercentile(),
+            findViewById(R.id.statKpgVal), gameMode.getKpg().getValue());
+
+      } else {
+        DisplayNotRanked();
+      }
     } catch (Exception e) {
       LOGGER.error("Error Displaying Statistics: " + e.getMessage().toString());
     }
+  }
+
+  /**
+   * Utility method that sets all text views and images to Not-Ranked values.
+   */
+  protected void DisplayNotRanked() {
+    SetRankIcon(findViewById(R.id.profileRank), RankPercentile.fromDouble(NON_EXISTENT));
+    SetRankName(findViewById(R.id.profileRankName), RankPercentile.fromDouble(NON_EXISTENT));
+
+
   }
 
   /**
@@ -209,13 +220,14 @@ public class PlayerHomeActivity extends AppCompatActivity {
   }
 
   /**
-   * Stringifies a double value to two decimal places.
+   * Stringifies a double value to two decimal places, and removes any trailing zero's, if any.
    *
    * @param value The double value.
    * @return A stringified double value.
    */
   protected String ToString(double value) {
-    return String.format("%.2f", value);
+    DecimalFormat format = new DecimalFormat("0.#");
+    return String.format("%.2f", format.format(value));
   }
 
   /**

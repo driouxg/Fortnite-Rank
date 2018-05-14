@@ -124,6 +124,10 @@ public class MainActivity extends AppCompatActivity {
     Intent intent = new Intent(getApplicationContext(), PlayerHomeActivity.class);
     intent.putExtra(BUNDLE_OBJECT_NAME, new Gson().toJson(playerStats));
 
+    searchingForPlayer = false;
+
+    StopTimer();
+
     // Put the bundle in the intent.
     intent.putExtras(bundle);
 
@@ -157,9 +161,16 @@ public class MainActivity extends AppCompatActivity {
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        timerRunning = false;
-        timer.cancel();
+        StopTimer();
       }
     }, THIRTY_SECONDS);
+  }
+
+  /**
+   * Stops the timer and resets the timer flag.
+   */
+  protected void StopTimer() {
+    timerRunning = false;
+    timer.cancel();
   }
 }

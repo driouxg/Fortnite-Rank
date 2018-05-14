@@ -21,7 +21,6 @@ public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerSt
   private static String API_KEY_KEY = "TRN-Api-Key";
   private static String API_KEY = "a4565ca8-67aa-4f3e-8f7b-734c9f2c49da";
   private static String SLASH_KEY = "/";
-  private static String PLAYER_NOT_FOUND = "Player Not Found";
   private static String ERROR_KEY = "error";
   private static int PLAYER_PLATFORM_INDEX = 0;
   private static int PLAYER_NAME_INDEX = 1;
@@ -55,22 +54,47 @@ public class FortniteApiServiceProvider extends AsyncTask<String, Void, PlayerSt
   @Override
   protected PlayerStats doInBackground(String... params) {
 
-    // Set the headers for the request
-    HttpHeaders headers = new HttpHeaders();
-    headers.set(API_KEY_KEY, API_KEY);
-    HttpEntity entity = new HttpEntity(headers);
-
     // Perform the GET request
-    ResponseEntity<PlayerStats> respEntity = fortniteClient
-        .exchange(BuildUri(params[PLAYER_PLATFORM_INDEX], params[PLAYER_NAME_INDEX]),
-            HttpMethod.GET, entity, PlayerStats.class);
+    ResponseEntity<PlayerStats> respEntity = PerformHttpRequest(params);
 
-    // Check for No Player Found
+    return RetrieveBody(respEntity);
+  }
+
+  /**
+   * Utility method that performs the GET request.
+   *
+   * @param params Contains a player's name and platform.
+   * @return A Query POJO containing serialized JSON from the request.
+   */
+  protected ResponseEntity<PlayerStats> PerformHttpRequest(String... params) {
+    return fortniteClient
+        .exchange(BuildUri(params[PLAYER_PLATFORM_INDEX], params[PLAYER_NAME_INDEX]),
+            HttpMethod.GET, SetHeaders(), PlayerStats.class);
+  }
+
+  /**
+   * Utility method that checks for a null response body.
+   *
+   * @param respEntity An array list of PlayerStats POJOs.
+   * @return A single POJO containing serialized JSON.
+   */
+  protected PlayerStats RetrieveBody(ResponseEntity<PlayerStats> respEntity) {
     if (respEntity.getBody().getAdditionalProperties().get(ERROR_KEY) != null) {
       return null;
     } else {
       return respEntity.getBody();
     }
+  }
+
+  /**
+   * Sets the header values for the Http request.
+   *
+   * @return A HttpEntity with headers set.
+   */
+  protected HttpEntity SetHeaders() {
+    HttpHeaders headers = new HttpHeaders();
+    headers.set(API_KEY_KEY, API_KEY);
+    return new HttpEntity(headers);
   }
 
   /**
