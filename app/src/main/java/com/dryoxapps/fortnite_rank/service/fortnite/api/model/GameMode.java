@@ -84,12 +84,12 @@ public class GameMode {
     this.score = score;
   }
 
-  @JsonProperty("wins")
+  @JsonProperty("top1")
   public GameModeStats getWins() {
     return wins;
   }
 
-  @JsonProperty("wins")
+  @JsonProperty("top1")
   public void setWins(GameModeStats wins) {
     this.wins = wins;
   }

@@ -28,8 +28,6 @@ public enum GameModeStatsNames {
 
   WIN_RATIO("winRatio"),
 
-  MATCHES("matches"),
-
   KILLS("kills"),
 
   KPG("kpg"),

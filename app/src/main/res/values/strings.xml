@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Fortnite-Rank</string>
+  <string name="overall">Overall</string>
+  <string name="solo">SOLO</string>
+  <string name="duo">DUO</string>
+  <string name="squad">SQUAD</string>
+  <string name="textview">TextView</string>
+  <string name="kpg">Kpg</string>
+  <string name="kills">Kills</string>
+  <string name="kd">Kd</string>
+  <string name="wins">Wins</string>
+  <string name="todo">TODO</string>
 </resources>

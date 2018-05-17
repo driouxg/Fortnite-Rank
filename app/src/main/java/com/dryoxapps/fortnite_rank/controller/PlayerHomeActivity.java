@@ -2,6 +2,8 @@ package com.dryoxapps.fortnite_rank.controller;
 
 import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateAvgPercentile;
 import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateAvgValue;
+import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateAvgValues;
+import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateNumberOfGameModesDouble;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import co.ceryle.segmentedbutton.SegmentedButtonGroup;
 import com.dryoxapps.fortnite_rank.R;
 import com.dryoxapps.fortnite_rank.controller.domain.RankName;
 import com.dryoxapps.fortnite_rank.controller.domain.RankPercentile;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameModeStats;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameModes;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameMode;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStats;
@@ -29,8 +32,26 @@ public class PlayerHomeActivity extends AppCompatActivity {
   private static final Logger LOGGER = LoggerFactory
       .getLogger(PlayerHomeActivity.class);
 
+  private static String RATING = "trnRating";
+  private static String SCORE = "score";
+  private static String WINS = "wins";
+  private static String TOP3 = "top3";
+  private static String TOP5 = "top5";
+  private static String TOP6 = "top6";
+  private static String TOP10 = "top10";
+  private static String TOP12 = "top12";
+  private static String TOP25 = "top25";
+  private static String KD = "kd";
+  private static String WIN_RATIO = "trnRating";
+  private static String KILLS = "kills";
+  private static String KPG = "kpg";
+  private static String SCORE_PER_MATCH = "scorePerMatch";
+
+  private static String NOT_RANKED_STRING = "Not Ranked";
+  private static String NULL_VALUE = "0";
   private static String BUNDLE_OBJECT_NAME = "myObject";
-  private static double NON_EXISTENT = 0;
+  private static double NOT_RANKED = 0;
+  private static double NO_VALUE = 0;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -94,31 +115,11 @@ public class PlayerHomeActivity extends AppCompatActivity {
   public void DisplayOverallStats(GameModes gameModes) {
 
     try {
-      /* Set Profile rank image and values */
-      SetRankIcon(findViewById(R.id.profileRank),
-          RankPercentile.fromDouble(CalculateAvgPercentile(gameModes, "trnRating")));
-      SetRankName(findViewById(R.id.profileRankName),
-          RankPercentile.fromDouble(CalculateAvgPercentile(gameModes, "trnRating")));
-
-      /* Set GameModeStats image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKdImage),
-          CalculateAvgPercentile(gameModes, "kd"),
-          findViewById(R.id.statKdVal), ToString(CalculateAvgValue(gameModes, "kd")));
-
-      /* Set Kills image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKillsImage),
-          CalculateAvgPercentile(gameModes, "kills"),
-          findViewById(R.id.statKillsVal), ToString(CalculateAvgValue(gameModes, "kills")));
-
-      /* Set Wins image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
-          CalculateAvgPercentile(gameModes, "wins"), findViewById(R.id.statWinsVal),
-          ToString(CalculateAvgValue(gameModes, "wins")));
-
-      /* Set Kpg image and values */
-      SetTableRowTextAndImage(findViewById(R.id.statKpgImage),
-          CalculateAvgPercentile(gameModes, "kpg"),
-          findViewById(R.id.statKpgVal), ToString(CalculateAvgValue(gameModes, "kpg")));
+      if (CalculateNumberOfGameModesDouble(gameModes) != NO_VALUE) {
+        DisplayAvgRanked(gameModes);
+      } else {
+        DisplayNotRanked();
+      }
     } catch (Exception e) {
       LOGGER.error("Error displaying Overall GameModes: " + e.getMessage().toString());
     }
@@ -130,32 +131,7 @@ public class PlayerHomeActivity extends AppCompatActivity {
   protected void DisplayStatistics(GameMode gameMode) {
     try {
       if (gameMode != null) {
-      /* Set Profile rank image and values */
-        SetRankIcon(findViewById(R.id.profileRank),
-            RankPercentile.fromDouble(gameMode.getTrnRating().getPercentile()));
-        SetRankName(findViewById(R.id.profileRankName),
-            RankPercentile.fromDouble(gameMode.getTrnRating().getPercentile()));
-
-      /* Set GameModeStats image and values */
-        SetTableRowTextAndImage(findViewById(R.id.statKdImage),
-            gameMode.getKd().getPercentile(),
-            findViewById(R.id.statKdVal), gameMode.getKd().getValue());
-
-      /* Set Kills image and values */
-        SetTableRowTextAndImage(findViewById(R.id.statKillsImage),
-            gameMode.getKills().getPercentile(),
-            findViewById(R.id.statKillsVal), gameMode.getKills().getValue());
-
-      /* Set Wins image and values */
-        SetTableRowTextAndImage(findViewById(R.id.statWinsImage),
-            gameMode.getWins().getPercentile(),
-            findViewById(R.id.statWinsVal), gameMode.getWins().getValue());
-
-      /* Set Kpg image and values */
-        SetTableRowTextAndImage(findViewById(R.id.statKpgImage),
-            gameMode.getKpg().getPercentile(),
-            findViewById(R.id.statKpgVal), gameMode.getKpg().getValue());
-
+        DisplayRanked(gameMode);
       } else {
         DisplayNotRanked();
       }
@@ -165,13 +141,91 @@ public class PlayerHomeActivity extends AppCompatActivity {
   }
 
   /**
+   * Utility method that displays the overall, average ranked stats.
+   *
+   * @param gameModes A GameModes POJO containing
+   */
+  protected void DisplayAvgRanked(GameModes gameModes) {
+    /* Set Profile rank image and values */
+    SetRankIcon(findViewById(R.id.profileRank),
+        RankPercentile.fromDouble(CalculateAvgPercentile(gameModes, RATING)));
+    SetRankName(findViewById(R.id.profileRankName),
+        RankPercentile.fromDouble(CalculateAvgPercentile(gameModes, RATING)));
+
+    System.out.println("REACHED1");
+
+      /* Set GameModeStats image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statKdImage),
+        findViewById(R.id.statKdVal), CalculateAvgValues(gameModes, KD));
+
+    System.out.println("REACHED2");
+
+      /* Set Kills image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statKillsImage),
+        findViewById(R.id.statKillsVal), CalculateAvgValues(gameModes, KILLS));
+
+    System.out.println("REACHED3");
+
+      /* Set Wins image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statWinsImage), findViewById(R.id.statWinsVal),
+        CalculateAvgValues(gameModes, WINS));
+
+    System.out.println("REACHED4");
+
+      /* Set Kpg image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statKpgImage), findViewById(R.id.statKpgVal),
+        CalculateAvgValues(gameModes, KPG));
+  }
+
+  /**
+   * Utility method that displays the rank names, images, and values for various statistics in the
+   * User Interface.
+   *
+   * @param gameMode The GameMode POJO.
+   */
+  protected void DisplayRanked(GameMode gameMode) {
+    /* Set Profile rank image and values */
+    SetRankIcon(findViewById(R.id.profileRank),
+        RankPercentile.fromDouble(gameMode.getTrnRating().getPercentile()));
+    SetRankName(findViewById(R.id.profileRankName),
+        RankPercentile.fromDouble(gameMode.getTrnRating().getPercentile()));
+
+    /* Set Kd image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statKdImage), findViewById(R.id.statKdVal),
+        gameMode.getKd());
+
+    /* Set Kills image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statKillsImage), findViewById(R.id.statKillsVal),
+        gameMode.getKills());
+
+    /* Set Wins image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statWinsImage), findViewById(R.id.statWinsVal),
+        gameMode.getWins());
+
+    /* Set Kpg image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statKpgImage), findViewById(R.id.statKpgVal),
+        gameMode.getKpg());
+  }
+
+  /**
    * Utility method that sets all text views and images to Not-Ranked values.
    */
   protected void DisplayNotRanked() {
-    SetRankIcon(findViewById(R.id.profileRank), RankPercentile.fromDouble(NON_EXISTENT));
-    SetRankName(findViewById(R.id.profileRankName), RankPercentile.fromDouble(NON_EXISTENT));
+    SetRankIcon(findViewById(R.id.profileRank), RankPercentile.fromDouble(NOT_RANKED));
+    SetRankName(findViewById(R.id.profileRankName), RankPercentile.fromDouble(NOT_RANKED));
 
+    /* Set Kd image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statKdImage), findViewById(R.id.statKdVal), null);
 
+    /* Set Kills image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statKillsImage), findViewById(R.id.statKillsVal),
+        null);
+
+    /* Set Wins image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statWinsImage), findViewById(R.id.statWinsVal), null);
+
+    /* Set Kpg image and values */
+    SetTableRowTextAndImage(findViewById(R.id.statKpgImage), findViewById(R.id.statKpgVal), null);
   }
 
   /**
@@ -188,15 +242,19 @@ public class PlayerHomeActivity extends AppCompatActivity {
    * Sets the values for a specified row in table.
    *
    * @param image The image representing a rank.
-   * @param percentile The percentile value.
    * @param textView The text view
-   * @param text The text to be set in the textview.
+   * @param gameModeStats The GameModeStats POJO.
    */
-  protected void SetTableRowTextAndImage(ImageView image, double percentile, TextView textView,
-      String text) {
+  protected void SetTableRowTextAndImage(ImageView image, TextView textView,
+      GameModeStats gameModeStats) {
     try {
-      SetRankIcon(image, RankPercentile.fromDouble(percentile));
-      SetTextView(textView, text);
+      if (gameModeStats == null || gameModeStats.getValue().equals(NULL_VALUE)) {
+        SetRankIcon(image, RankPercentile.fromDouble(NOT_RANKED));
+        SetTextView(textView, ToString(NO_VALUE));
+      } else {
+        SetRankIcon(image, RankPercentile.fromDouble(gameModeStats.getPercentile()));
+        SetTextView(textView, gameModeStats.getValue());
+      }
     } catch (Exception e) {
       LOGGER.error(
           "Error displaying values for Table Row " + String.valueOf(image.getTag()) + " :" + e
@@ -212,7 +270,8 @@ public class PlayerHomeActivity extends AppCompatActivity {
    * @return A list a game mode objects.
    */
   protected GameMode[] GetGameModes(GameModes gameModes) {
-    GameMode[] gameMode = {gameModes.getSoloStatistics(),
+    GameMode[] gameMode = {
+        gameModes.getSoloStatistics(),
         gameModes.getDuoStatistics(),
         gameModes.getSquadStatistics()};
 
@@ -227,7 +286,7 @@ public class PlayerHomeActivity extends AppCompatActivity {
    */
   protected String ToString(double value) {
     DecimalFormat format = new DecimalFormat("0.#");
-    return String.format("%.2f", format.format(value));
+    return format.format(value);
   }
 
   /**

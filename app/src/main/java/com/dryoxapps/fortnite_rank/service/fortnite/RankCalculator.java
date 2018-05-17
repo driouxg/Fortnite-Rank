@@ -3,6 +3,8 @@ package com.dryoxapps.fortnite_rank.service.fortnite;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameModeStats;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameModes;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameMode;
+import java.sql.ResultSet;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,9 +16,6 @@ import java.util.Map;
 public class RankCalculator {
 
   private static double NO_VALUE = 0;
-  private static int SOLO_STATS_INDEX = 0;
-  private static int DUO_STATS_INDEX = 1;
-  private static int SQUAD_STATS_INDEX = 2;
 
   /**
    * Utility method that calculates the average percentile rank for GameModeStats
@@ -30,15 +29,15 @@ public class RankCalculator {
 
     Map[] maps = gameModes.GetMaps();
 
-    sum += TransformPercentile((GameModeStats) maps[SOLO_STATS_INDEX].get(statKey));
-    sum += TransformPercentile((GameModeStats) maps[DUO_STATS_INDEX].get(statKey));
-    sum += TransformPercentile((GameModeStats) maps[SQUAD_STATS_INDEX].get(statKey));
+    for (Map map : maps) {
+      sum += TransformPercentile((GameModeStats) map.get(statKey));
+    }
 
     return sum / numberOfGameModes;
   }
 
   /**
-   * Utility method that calculates the average value for GameModeStats.
+   * Utility method that calculates the average value for non-null GameModeStats.
    *
    * @param gameModes The gamemode statistics for an individual game mode.
    * @return The average value for GameModeStats.
@@ -49,11 +48,27 @@ public class RankCalculator {
 
     Map[] maps = gameModes.GetMaps();
 
-    sum += TransformValue((GameModeStats) maps[SOLO_STATS_INDEX].get(statKey));
-    sum += TransformValue((GameModeStats) maps[DUO_STATS_INDEX].get(statKey));
-    sum += TransformValue((GameModeStats) maps[SQUAD_STATS_INDEX].get(statKey));
+    for (Map map : maps) {
+      sum += TransformValue((GameModeStats) map.get(statKey));
+    }
 
     return sum / numberOfGameModes;
+  }
+
+  /**
+   * Creates a GameModeStats POJO and fills it with data to be displayed in the player ranks.
+   *
+   * @param gameModes The GameModeStats POJO
+   * @param statKey A key for a GameModeStats POJO in a hashmap
+   * @return A GameModeStats POJO containing data to be displayed in the player ranks page.
+   */
+  public static GameModeStats CalculateAvgValues(GameModes gameModes, String statKey) {
+    GameModeStats gameModeStats = new GameModeStats();
+
+    gameModeStats.setPercentile(CalculateAvgPercentile(gameModes, statKey));
+    gameModeStats.setValue(ToString(CalculateAvgValue(gameModes, statKey)));
+
+    return gameModeStats;
   }
 
   /**
@@ -64,10 +79,11 @@ public class RankCalculator {
    */
   protected static double TransformPercentile(GameModeStats gameModeStats) {
     if (NonNull(gameModeStats)) {
-      return gameModeStats.getPercentile();
-    } else {
-      return NO_VALUE;
+      if (NonNull(gameModeStats.getPercentile())) {
+        return gameModeStats.getPercentile();
+      }
     }
+    return NO_VALUE;
   }
 
   /**
@@ -99,6 +115,20 @@ public class RankCalculator {
   }
 
   /**
+   * Checks if the Double value is non null
+   *
+   * @param value A Double value
+   * @return True if the the Double is nonnull
+   */
+  protected static boolean NonNull(Double value) {
+    if (value != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
    * Checks if the gameModeStats object is not null
    *
    * @param gameModeStats A GameModeStats POJO.
@@ -118,7 +148,7 @@ public class RankCalculator {
    * @param gameModes A GameModes POJO.
    * @return The number of game mode objects.
    */
-  static double CalculateNumberOfGameModesDouble(GameModes gameModes) {
+  public static double CalculateNumberOfGameModesDouble(GameModes gameModes) {
     double numberOfGameModes = 0;
 
     if (gameModes.getSoloStatistics() != null) {
@@ -141,5 +171,16 @@ public class RankCalculator {
    */
   static double ToDouble(String string) {
     return Double.parseDouble(string);
+  }
+
+  /**
+   * Stringifies a double value to two decimal places, and removes any trailing zero's, if any.
+   *
+   * @param value The double value.
+   * @return A stringified double value.
+   */
+  protected static String ToString(double value) {
+    DecimalFormat format = new DecimalFormat("0.#");
+    return format.format(value);
   }
 }
