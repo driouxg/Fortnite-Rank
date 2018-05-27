@@ -2,10 +2,10 @@ package com.dryoxapps.fortnite_rank.service.fortnite;
 
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameModeStats;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameModes;
-import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameMode;
-import java.sql.ResultSet;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.RecentMatch;
 import java.text.DecimalFormat;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,6 +16,7 @@ import java.util.Map;
 public class RankCalculator {
 
   private static double NO_VALUE = 0;
+  private static int NO_VALUE_INT = 0;
 
   /**
    * Utility method that calculates the average percentile rank for GameModeStats
@@ -25,7 +26,7 @@ public class RankCalculator {
    */
   public static double CalculateAvgPercentile(GameModes gameModes, String statKey) {
     double sum = 0;
-    double numberOfGameModes = CalculateNumberOfGameModesDouble(gameModes);
+    double numberOfGameModes = CalculateNumberOfGameModes(gameModes);
 
     Map[] maps = gameModes.GetMaps();
 
@@ -44,12 +45,32 @@ public class RankCalculator {
    */
   public static double CalculateAvgValue(GameModes gameModes, String statKey) {
     double sum = 0;
-    double numberOfGameModes = CalculateNumberOfGameModesDouble(gameModes);
+    double numberOfGameModes = CalculateNumberOfGameModes(gameModes);
 
     Map[] maps = gameModes.GetMaps();
 
     for (Map map : maps) {
       sum += TransformValue((GameModeStats) map.get(statKey));
+    }
+
+    return sum / numberOfGameModes;
+  }
+
+  /**
+   * Calculates the average rank value for non-null GameModeStats
+   *
+   * @param gameModes The gameMode statistics for an individual game mode.
+   * @param statKey The key for a specific GameModeStats POJO
+   * @return average rank value
+   */
+  public static int CalculateAvgRank(GameModes gameModes, String statKey) {
+    int sum = 0;
+    int numberOfGameModes = CalculateNumberOfGameModes(gameModes);
+
+    Map[] maps = gameModes.GetMaps();
+
+    for (Map map : maps) {
+      sum += TransformRank((GameModeStats) map.get(statKey));
     }
 
     return sum / numberOfGameModes;
@@ -69,6 +90,92 @@ public class RankCalculator {
     gameModeStats.setValue(ToString(CalculateAvgValue(gameModes, statKey)));
 
     return gameModeStats;
+  }
+
+  /**
+   * Returns an int value representing the total number of matches played, for the match history
+   * table row.
+   *
+   * @param recentMatches A list of RecentMatch POJOs
+   * @return Total number of matches played
+   */
+  public static int CalculateTotalNumberOfMatches(List<RecentMatch> recentMatches) {
+    if (NonNull(recentMatches)) {
+      ArrayList<RecentMatch> uniqueRecentMatches = GetRecentMatches(recentMatches);
+      int sum = 0;
+
+      for (RecentMatch recentMatch : uniqueRecentMatches) {
+        sum += TransformNumberOfMatches(recentMatch);
+      }
+
+      return sum;
+    } else {
+      return NO_VALUE_INT;
+    }
+  }
+
+  /**
+   * Returns a double value representing the overall Player Rating change.
+   *
+   * @param recentMatches A list of RecentMatch POJOs.
+   * @return Overall player rating change.
+   */
+  public static double CalculateTotalRatingDelta(List<RecentMatch> recentMatches) {
+    if (NonNull(recentMatches)) {
+      ArrayList<RecentMatch> uniqueRecentMatches = GetRecentMatches(recentMatches);
+      double sum = 0;
+
+      for (RecentMatch recentMatch : uniqueRecentMatches) {
+        sum += TransformRatingChange(recentMatch);
+      }
+
+      return sum;
+    } else {
+      return NO_VALUE;
+    }
+  }
+
+  /**
+   * Gets the most recent match for each ranked playlist i.e (solo, duo, squad).
+   *
+   * @param recentMatches A List of RecentMatch POJOs
+   * @return An arraylist of RecentMatch POJOs
+   */
+  protected static ArrayList<RecentMatch> GetRecentMatches(List<RecentMatch> recentMatches) {
+    ArrayList<RecentMatch> uniqueRecentMatches = new ArrayList<>();
+
+    uniqueRecentMatches.add(GetRecentMatch(recentMatches, "p2"));
+    uniqueRecentMatches.add(GetRecentMatch(recentMatches, "p9"));
+    uniqueRecentMatches.add(GetRecentMatch(recentMatches, "p10"));
+
+    return uniqueRecentMatches;
+  }
+
+  /**
+   * Gets the first RecentMatch POJO that has a playlist attribute with the same name as the
+   * parameter 'key'.
+   *
+   * @param recentMatches A list of RecentMatch POJOs
+   * @param key The playlist key.
+   * @return The first RecentMatch object that has a playlist name matching the parameter 'key'.
+   */
+  public static RecentMatch GetRecentMatch(List<RecentMatch> recentMatches, String key) {
+    boolean found = false;
+    int i = 0;
+
+    while (!found && i < recentMatches.size()) {
+      if (recentMatches.get(i).getPlaylist().equals(key)) {
+        found = true;
+      } else {
+        i++;
+      }
+    }
+
+    if (found) {
+      return recentMatches.get(i);
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -101,16 +208,38 @@ public class RankCalculator {
   }
 
   /**
-   * Checks if the gameMode object is null.
+   * Retrieves the rank value for gameModeStats
    *
-   * @param gameMode A GameMode POJO
-   * @return True if the object is not null
+   * @param gameModeStats The gameModeStats POJO
+   * @return Double value
    */
-  protected static boolean NonNull(GameMode gameMode) {
-    if (gameMode != null) {
-      return true;
+  protected static double TransformRank(GameModeStats gameModeStats) {
+    if (NonNull(gameModeStats)) {
+      return ToDouble(gameModeStats.getRank());
     } else {
-      return false;
+      return NO_VALUE;
+    }
+  }
+
+  /**
+   * Retrieves the double value for a RecentMatch
+   *
+   * @param recentMatch A RecentMatch POJO.
+   * @return A double value for a recent match.
+   */
+  protected static double TransformRatingChange(RecentMatch recentMatch) {
+    if (NonNull(recentMatch)) {
+      return recentMatch.getTrnRatingChange();
+    } else {
+      return NO_VALUE;
+    }
+  }
+
+  protected static int TransformNumberOfMatches(RecentMatch recentMatch) {
+    if (NonNull(recentMatch)) {
+      return recentMatch.getMatches();
+    } else {
+      return NO_VALUE_INT;
     }
   }
 
@@ -143,13 +272,41 @@ public class RankCalculator {
   }
 
   /**
+   * Checks if the RecentMatch POJO is not null.
+   *
+   * @param recentMatch A RecentMatch POJO.
+   * @return True if the object is not null.
+   */
+  protected static boolean NonNull(RecentMatch recentMatch) {
+    if (recentMatch != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Checks if the list of RecentMatch POJOs are not null.
+   *
+   * @param recentMatches List of RecentMatch POJOs
+   * @return True if the object is not null
+   */
+  protected static boolean NonNull(List<RecentMatch> recentMatches) {
+    if (recentMatches != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
    * Calculates the number of game mode objects that are not null.
    *
    * @param gameModes A GameModes POJO.
    * @return The number of game mode objects.
    */
-  public static double CalculateNumberOfGameModesDouble(GameModes gameModes) {
-    double numberOfGameModes = 0;
+  public static int CalculateNumberOfGameModes(GameModes gameModes) {
+    int numberOfGameModes = 0;
 
     if (gameModes.getSoloStatistics() != null) {
       numberOfGameModes++;
@@ -171,6 +328,16 @@ public class RankCalculator {
    */
   static double ToDouble(String string) {
     return Double.parseDouble(string);
+  }
+
+  /**
+   * Converts int to double
+   *
+   * @param value Integer value
+   * @return double value
+   */
+  static double ToDouble(int value) {
+    return (double) value;
   }
 
   /**

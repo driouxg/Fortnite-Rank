@@ -1,9 +1,12 @@
 package com.dryoxapps.fortnite_rank.controller;
 
 import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateAvgPercentile;
-import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateAvgValue;
+import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateAvgRank;
+import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateTotalNumberOfMatches;
+import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateTotalRatingDelta;
 import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateAvgValues;
-import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateNumberOfGameModesDouble;
+import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.CalculateNumberOfGameModes;
+import static com.dryoxapps.fortnite_rank.service.fortnite.RankCalculator.GetRecentMatch;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,8 +20,10 @@ import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameModeStats;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameModes;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.GameMode;
 import com.dryoxapps.fortnite_rank.service.fortnite.api.model.PlayerStats;
+import com.dryoxapps.fortnite_rank.service.fortnite.api.model.RecentMatch;
 import com.google.gson.Gson;
 import java.text.DecimalFormat;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,26 +37,31 @@ public class PlayerHomeActivity extends AppCompatActivity {
   private static final Logger LOGGER = LoggerFactory
       .getLogger(PlayerHomeActivity.class);
 
-  private static String RATING = "trnRating";
+  private static String TRN_RATING = "trnRating";
   private static String SCORE = "score";
   private static String WINS = "wins";
-  private static String TOP3 = "top3";
-  private static String TOP5 = "top5";
-  private static String TOP6 = "top6";
-  private static String TOP10 = "top10";
-  private static String TOP12 = "top12";
-  private static String TOP25 = "top25";
   private static String KD = "kd";
   private static String WIN_RATIO = "trnRating";
   private static String KILLS = "kills";
   private static String KPG = "kpg";
   private static String SCORE_PER_MATCH = "scorePerMatch";
+  private static String SOLO_STATS = "p2";
+  private static String DUO_STATS = "p10";
+  private static String SQUAD_STATS = "p9";
+
+  private static String YOUR_LAST_GAME = "Your last game ";
+  private static String YOUR_LAST = "Your last ";
+  private static String YIELDED = "yielded";
+  private static String SPACE = " ";
+  private static String RATING = "rating";
+  private static String GAMES = "games";
 
   private static String NOT_RANKED_STRING = "Not Ranked";
-  private static String NULL_VALUE = "0";
   private static String BUNDLE_OBJECT_NAME = "myObject";
   private static double NOT_RANKED = 0;
   private static double NO_VALUE = 0;
+  private static int NO_VALUE_INT = 0;
+  private static int ONE = 1;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +75,7 @@ public class PlayerHomeActivity extends AppCompatActivity {
     SetTextView(findViewById(R.id.playerName), playerStats.getEpicUserHandle());
 
     // Display default statistics (Overall)
-    DisplayOverallStats(playerStats.getGameModes());
+    DisplayOverallStats(playerStats.getGameModes(), playerStats.getRecentMatches());
 
     // Create the Segmented Button Group, and change the value based on selection.
     SegmentedButtonGroup segmentedButtonGroup = findViewById(R.id.segmentedButtonGroup);
@@ -75,16 +85,22 @@ public class PlayerHomeActivity extends AppCompatActivity {
           public void onClickedButtonPosition(int position) {
             switch (position) {
               case 0:
-                DisplayOverallStats(playerStats.getGameModes());
+                DisplayOverallStats(playerStats.getGameModes(), playerStats.getRecentMatches());
                 break;
+
               case 1:
-                DisplayStatistics(playerStats.getGameModes().getSoloStatistics());
+                DisplayStatistics(playerStats.getGameModes().getSoloStatistics(),
+                    playerStats.getRecentMatches(), SOLO_STATS);
                 break;
+
               case 2:
-                DisplayStatistics(playerStats.getGameModes().getDuoStatistics());
+                DisplayStatistics(playerStats.getGameModes().getDuoStatistics(),
+                    playerStats.getRecentMatches(), DUO_STATS);
                 break;
+
               case 3:
-                DisplayStatistics(playerStats.getGameModes().getSquadStatistics());
+                DisplayStatistics(playerStats.getGameModes().getSquadStatistics(),
+                    playerStats.getRecentMatches(), SQUAD_STATS);
                 break;
             }
           }
@@ -112,11 +128,11 @@ public class PlayerHomeActivity extends AppCompatActivity {
    *
    * @param gameModes The GameModes POJO.
    */
-  public void DisplayOverallStats(GameModes gameModes) {
+  public void DisplayOverallStats(GameModes gameModes, List<RecentMatch> recentMatches) {
 
     try {
-      if (CalculateNumberOfGameModesDouble(gameModes) != NO_VALUE) {
-        DisplayAvgRanked(gameModes);
+      if (CalculateNumberOfGameModes(gameModes) != NO_VALUE) {
+        DisplayAvgRanked(gameModes, recentMatches);
       } else {
         DisplayNotRanked();
       }
@@ -128,10 +144,10 @@ public class PlayerHomeActivity extends AppCompatActivity {
   /**
    * Displays the statistics for the currently selected game mmode.
    */
-  protected void DisplayStatistics(GameMode gameMode) {
+  protected void DisplayStatistics(GameMode gameMode, List<RecentMatch> recentMatches, String key) {
     try {
       if (gameMode != null) {
-        DisplayRanked(gameMode);
+        DisplayRanked(gameMode, recentMatches, key);
       } else {
         DisplayNotRanked();
       }
@@ -145,36 +161,47 @@ public class PlayerHomeActivity extends AppCompatActivity {
    *
    * @param gameModes A GameModes POJO containing
    */
-  protected void DisplayAvgRanked(GameModes gameModes) {
-    /* Set Profile rank image and values */
+  protected void DisplayAvgRanked(GameModes gameModes, List<RecentMatch> recentMatches) {
+    /* Set Profile rank image, name, and number */
     SetRankIcon(findViewById(R.id.profileRank),
-        RankPercentile.fromDouble(CalculateAvgPercentile(gameModes, RATING)));
+        RankPercentile.fromDouble(CalculateAvgPercentile(gameModes, TRN_RATING)));
     SetRankName(findViewById(R.id.profileRankName),
-        RankPercentile.fromDouble(CalculateAvgPercentile(gameModes, RATING)));
+        RankPercentile.fromDouble(CalculateAvgPercentile(gameModes, TRN_RATING)));
+    SetRankName(findViewById(R.id.profileRankNumber),
+        RankPercentile.fromDouble(CalculateAvgRank(gameModes, TRN_RATING)));
 
-    System.out.println("REACHED1");
+    /* Set Rating image and values */
+    SetTableRowValues(findViewById(R.id.statRatingImage), findViewById(R.id.statRatingVal),
+        CalculateAvgValues(gameModes, TRN_RATING));
 
       /* Set GameModeStats image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statKdImage),
-        findViewById(R.id.statKdVal), CalculateAvgValues(gameModes, KD));
-
-    System.out.println("REACHED2");
+    SetTableRowValues(findViewById(R.id.statKdImage), findViewById(R.id.statKdVal),
+        CalculateAvgValues(gameModes, KD));
 
       /* Set Kills image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statKillsImage),
-        findViewById(R.id.statKillsVal), CalculateAvgValues(gameModes, KILLS));
-
-    System.out.println("REACHED3");
+    SetTableRowValues(findViewById(R.id.statKillsImage), findViewById(R.id.statKillsVal),
+        CalculateAvgValues(gameModes, KILLS));
 
       /* Set Wins image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statWinsImage), findViewById(R.id.statWinsVal),
+    SetTableRowValues(findViewById(R.id.statWinsImage), findViewById(R.id.statWinsVal),
         CalculateAvgValues(gameModes, WINS));
 
-    System.out.println("REACHED4");
-
       /* Set Kpg image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statKpgImage), findViewById(R.id.statKpgVal),
+    SetTableRowValues(findViewById(R.id.statKpgImage), findViewById(R.id.statKpgVal),
         CalculateAvgValues(gameModes, KPG));
+
+    /* Set Score image and values */
+    SetTableRowValues(findViewById(R.id.statScoreImage), findViewById(R.id.statScoreVal),
+        CalculateAvgValues(gameModes, SCORE));
+
+    /* Set Score Per Match image and values */
+    SetTableRowValues(findViewById(R.id.statScorePerMatchImage),
+        findViewById(R.id.statScorePerMatchVal), CalculateAvgValues(gameModes, SCORE_PER_MATCH));
+
+    /* Set MatchHistory image and values */
+    SetTableRowValues(findViewById(R.id.matchHistoryImage), findViewById(R.id.matchHistoryVal),
+        CalculateTotalRatingDelta(recentMatches),
+        CalculateTotalNumberOfMatches(recentMatches));
   }
 
   /**
@@ -183,28 +210,46 @@ public class PlayerHomeActivity extends AppCompatActivity {
    *
    * @param gameMode The GameMode POJO.
    */
-  protected void DisplayRanked(GameMode gameMode) {
+  protected void DisplayRanked(GameMode gameMode, List<RecentMatch> recentMatches, String key) {
     /* Set Profile rank image and values */
     SetRankIcon(findViewById(R.id.profileRank),
         RankPercentile.fromDouble(gameMode.getTrnRating().getPercentile()));
     SetRankName(findViewById(R.id.profileRankName),
         RankPercentile.fromDouble(gameMode.getTrnRating().getPercentile()));
+    SetTextView(findViewById(R.id.profileRankNumber), ToString(gameMode.getTrnRating().getRank()));
+
+    /* Set Rating image and values */
+    SetTableRowValues(findViewById(R.id.statRatingImage), findViewById(R.id.statRatingVal),
+        gameMode.getTrnRating());
 
     /* Set Kd image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statKdImage), findViewById(R.id.statKdVal),
+    SetTableRowValues(findViewById(R.id.statKdImage), findViewById(R.id.statKdVal),
         gameMode.getKd());
 
     /* Set Kills image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statKillsImage), findViewById(R.id.statKillsVal),
+    SetTableRowValues(findViewById(R.id.statKillsImage), findViewById(R.id.statKillsVal),
         gameMode.getKills());
 
     /* Set Wins image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statWinsImage), findViewById(R.id.statWinsVal),
+    SetTableRowValues(findViewById(R.id.statWinsImage), findViewById(R.id.statWinsVal),
         gameMode.getWins());
 
     /* Set Kpg image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statKpgImage), findViewById(R.id.statKpgVal),
+    SetTableRowValues(findViewById(R.id.statKpgImage), findViewById(R.id.statKpgVal),
         gameMode.getKpg());
+
+    /* Set Score image and values */
+    SetTableRowValues(findViewById(R.id.statScoreImage), findViewById(R.id.statScoreVal),
+        gameMode.getScore());
+
+    /* Set Score Per Match image and values */
+    SetTableRowValues(findViewById(R.id.statScorePerMatchImage),
+        findViewById(R.id.statScorePerMatchVal), gameMode.getScorePerMatch());
+
+    /* Set Match History image and values */
+    SetTableRowValues(findViewById(R.id.matchHistoryImage), findViewById(R.id.matchHistoryVal),
+        GetRecentMatch(recentMatches, key).getTrnRatingChange(),
+        GetRecentMatch(recentMatches, key).getMatches());
   }
 
   /**
@@ -213,19 +258,34 @@ public class PlayerHomeActivity extends AppCompatActivity {
   protected void DisplayNotRanked() {
     SetRankIcon(findViewById(R.id.profileRank), RankPercentile.fromDouble(NOT_RANKED));
     SetRankName(findViewById(R.id.profileRankName), RankPercentile.fromDouble(NOT_RANKED));
+    SetRankName(findViewById(R.id.profileRankNumber), RankPercentile.fromDouble(NOT_RANKED));
+
+    /* Set Rating image and values */
+    SetTableRowValues(findViewById(R.id.statRatingImage), findViewById(R.id.statRatingVal), null);
 
     /* Set Kd image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statKdImage), findViewById(R.id.statKdVal), null);
+    SetTableRowValues(findViewById(R.id.statKdImage), findViewById(R.id.statKdVal), null);
 
     /* Set Kills image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statKillsImage), findViewById(R.id.statKillsVal),
+    SetTableRowValues(findViewById(R.id.statKillsImage), findViewById(R.id.statKillsVal),
         null);
 
     /* Set Wins image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statWinsImage), findViewById(R.id.statWinsVal), null);
+    SetTableRowValues(findViewById(R.id.statWinsImage), findViewById(R.id.statWinsVal), null);
 
     /* Set Kpg image and values */
-    SetTableRowTextAndImage(findViewById(R.id.statKpgImage), findViewById(R.id.statKpgVal), null);
+    SetTableRowValues(findViewById(R.id.statKpgImage), findViewById(R.id.statKpgVal), null);
+
+    /* Set Score image and values */
+    SetTableRowValues(findViewById(R.id.statScoreImage), findViewById(R.id.statScoreVal), null);
+
+    /* Set Score Per Match image and values */
+    SetTableRowValues(findViewById(R.id.statScorePerMatchImage),
+        findViewById(R.id.statScorePerMatchVal), null);
+
+    /* Set Match history image and values */
+    SetTableRowValues(findViewById(R.id.matchHistoryImage), findViewById(R.id.matchHistoryVal),
+        NO_VALUE, NO_VALUE_INT);
   }
 
   /**
@@ -245,41 +305,62 @@ public class PlayerHomeActivity extends AppCompatActivity {
    * @param textView The text view
    * @param gameModeStats The GameModeStats POJO.
    */
-  protected void SetTableRowTextAndImage(ImageView image, TextView textView,
+  protected void SetTableRowValues(ImageView image, TextView textView,
       GameModeStats gameModeStats) {
     try {
-      if (gameModeStats == null || gameModeStats.getValue().equals(NULL_VALUE)) {
+      if (gameModeStats == null) {
         SetRankIcon(image, RankPercentile.fromDouble(NOT_RANKED));
-        SetTextView(textView, ToString(NO_VALUE));
+        SetTextView(textView, NOT_RANKED_STRING);
       } else {
         SetRankIcon(image, RankPercentile.fromDouble(gameModeStats.getPercentile()));
         SetTextView(textView, gameModeStats.getValue());
       }
     } catch (Exception e) {
       LOGGER.error(
-          "Error displaying values for Table Row " + String.valueOf(image.getTag()) + " :" + e
-              .getMessage().toString());
+          "Error displaying values for Table Row:" + e.getMessage().toString());
     }
   }
 
   /**
-   * Retrieves a list of POJOs for solo, duo, and squad statistics
-   * objects.
+   * Sets the values for the match history row.
    *
-   * @param gameModes A POJO containing the game modes.
-   * @return A list a game mode objects.
+   * @param image The image representinga rank
+   * @param textView The text view
+   * @param value The rating change value
    */
-  protected GameMode[] GetGameModes(GameModes gameModes) {
-    GameMode[] gameMode = {
-        gameModes.getSoloStatistics(),
-        gameModes.getDuoStatistics(),
-        gameModes.getSquadStatistics()};
-
-    return gameMode;
+  protected void SetTableRowValues(ImageView image, TextView textView, double value,
+      int numMatches) {
+    try {
+      SetRankIcon(image, value);
+      SetTextView(textView, GeneratePhrase(value, numMatches));
+    } catch (Exception e) {
+      LOGGER.error("Error displaying match history: " + e.getMessage().toString());
+    }
   }
 
   /**
-   * Stringifies a double value to two decimal places, and removes any trailing zero's, if any.
+   * Creates a phrase to express the change in rating based on recent matches.
+   *
+   * @param value The TRN-Rating value
+   * @param numMatches The number of matches
+   * @return A phrase expressing the change in rating
+   */
+  protected String GeneratePhrase(double value, int numMatches) {
+    String phrase = "";
+
+    if (numMatches == ONE) {
+      phrase += YOUR_LAST_GAME + YIELDED + SPACE + ToString(value) + SPACE + RATING;
+    } else {
+      phrase +=
+          YOUR_LAST + ToString(numMatches) + SPACE + GAMES + SPACE + YIELDED + SPACE + ToString(
+              value) + SPACE + RATING;
+    }
+
+    return phrase;
+  }
+
+  /**
+   * Stringifies a double value to one decimal places, and removes any trailing zero's, if any.
    *
    * @param value The double value.
    * @return A stringified double value.
@@ -287,6 +368,22 @@ public class PlayerHomeActivity extends AppCompatActivity {
   protected String ToString(double value) {
     DecimalFormat format = new DecimalFormat("0.#");
     return format.format(value);
+  }
+
+  /**
+   * Sets the match history table row image and values.
+   *
+   * @param image The match history image
+   * @param value The double value for rating change
+   */
+  protected void SetRankIcon(ImageView image, double value) {
+    if (value > 0) {
+      image.setImageResource(R.drawable.green_plus);
+    } else if (value == 0) {
+      image.setImageResource(R.drawable.question);
+    } else {
+      image.setImageResource(R.drawable.red_plus);
+    }
   }
 
   /**

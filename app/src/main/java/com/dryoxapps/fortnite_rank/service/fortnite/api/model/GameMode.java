@@ -245,6 +245,7 @@ public class GameMode {
     map.put("winRatio", winRatio);
     map.put("kills", kills);
     map.put("kpg", kpg);
+    map.put("scorePerMatch", scorePerMatch);
 
     return map;
   }
